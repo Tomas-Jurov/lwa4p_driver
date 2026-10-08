@@ -4,10 +4,13 @@
 <robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:property name="mesh" value="package://lwa4p_description/meshes/lwa4p"/>
+  <!-- limits from the SCHUNK datasheets: range = preset software limit switches
+       (LWA 4P manual 3.2: +-170 deg, axis 3 +-155 deg) minus a small margin,
+       72 deg/s, effort = max. torque (ERB 145: 64 Nm, ERB 115: 19 Nm) -->
   <xacro:property name="safety_offset" value="0.02"/>
-  <xacro:property name="lim" value="${2.967 - safety_offset}"/>
-  <xacro:property name="lim3" value="${2.714 - safety_offset}"/>
-  <xacro:property name="vel" value="1.26"/>
+  <xacro:property name="lim" value="${radians(170) - safety_offset}"/>
+  <xacro:property name="lim3" value="${radians(155) - safety_offset}"/>
+  <xacro:property name="vel" value="${radians(72)}"/>
 
   <material name="schunk_blue"><color rgba="0.0 0.25 0.6 1.0"/></material>
   <material name="schunk_grey"><color rgba="0.75 0.75 0.75 1.0"/></material>
@@ -76,27 +79,27 @@
   </link>
 
   <xacro:arm_joint n="1" parent="arm_base_link" child="arm_1_link"
-                   xyz="0 0 0" rpy="0 0 0" effort="370" lower="${-lim}" upper="${lim}"/>
+                   xyz="0 0 0" rpy="0 0 0" effort="64" lower="${-lim}" upper="${lim}"/>
   <xacro:arm_link name="arm_1_link" stl="arm_1_link" material="schunk_blue"/>
 
   <xacro:arm_joint n="2" parent="arm_1_link" child="arm_2_link"
-                   xyz="0 0 0" rpy="1.5708 0 0" effort="370" lower="${-lim}" upper="${lim}"/>
+                   xyz="0 0 0" rpy="1.5708 0 0" effort="64" lower="${-lim}" upper="${lim}"/>
   <xacro:arm_link name="arm_2_link" stl="arm_2_link" material="schunk_grey"/>
 
   <xacro:arm_joint n="3" parent="arm_2_link" child="arm_3_link"
-                   xyz="0 0.350 0" rpy="0 3.14159 0" effort="176" lower="${-lim3}" upper="${lim3}"/>
+                   xyz="0 0.350 0" rpy="0 3.14159 0" effort="64" lower="${-lim3}" upper="${lim3}"/>
   <xacro:arm_link name="arm_3_link" stl="arm_3_link" material="schunk_blue"/>
 
   <xacro:arm_joint n="4" parent="arm_3_link" child="arm_4_link"
-                   xyz="0 0 0" rpy="-1.5708 3.14159 0" effort="176" lower="${-lim}" upper="${lim}"/>
+                   xyz="0 0 0" rpy="-1.5708 3.14159 0" effort="64" lower="${-lim}" upper="${lim}"/>
   <xacro:arm_link name="arm_4_link" stl="arm_4_link" material="schunk_grey"/>
 
   <xacro:arm_joint n="5" parent="arm_4_link" child="arm_5_link"
-                   xyz="0 0.005263 0.305" rpy="1.5708 0 3.14159" effort="41.6" lower="${-lim}" upper="${lim}"/>
+                   xyz="0 0.005263 0.305" rpy="1.5708 0 3.14159" effort="19" lower="${-lim}" upper="${lim}"/>
   <xacro:arm_link name="arm_5_link" stl="arm_5_link" material="schunk_blue"/>
 
   <xacro:arm_joint n="6" parent="arm_5_link" child="arm_6_link"
-                   xyz="0 0 0" rpy="-1.5708 0 0" effort="20.1" lower="${-lim}" upper="${lim}"/>
+                   xyz="0 0 0" rpy="-1.5708 0 0" effort="19" lower="${-lim}" upper="${lim}"/>
   <xacro:arm_link name="arm_6_link" stl="arm_6_link" material="schunk_grey"/>
 
   <!-- tool flange face (end of the arm_6 mesh, z = 0.084) -->

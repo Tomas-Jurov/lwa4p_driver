@@ -70,6 +70,7 @@ lwa4p_ws/                     ← this repo = a colcon workspace
     ├── lwa4p_driver/         CANopen arm driver, WSG 50 gripper node, CLI tools
     ├── lwa4p_moveit_config/  MoveIt 2 config (Setup Assistant) + real.launch.py
     └── lwa4p_gazebo/         Gazebo world, launch, controllers, example scripts
+isaac/                        Isaac Sim / Isaac Lab model for VLA & RL training (see isaac/README.md)
 ```
 
 ---
@@ -250,6 +251,12 @@ Then plan and execute in RViz, or run your `simple_moveit.py` scripts. They use 
 - Drive positions are logged to `~/.ros/lwa4p_trace_*.csv` for every trajectory, with a per-joint report on abort.
 
 </details>
+
+---
+
+## 🧠 Isaac Sim / VLA training
+
+[`isaac/`](isaac/README.md) contains a plain URDF with **SCHUNK datasheet masses**, mesh-based inertias, real torque and speed limits, and a two-finger WSG 50. It also has an Isaac Lab `ArticulationCfg` template, the camera intrinsics, the reference scene, and the action/observation contract with the real robot.
 
 ---
 
