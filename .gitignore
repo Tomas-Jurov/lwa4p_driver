@@ -1,0 +1,35 @@
+# colcon / ROS 2 build output
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# CMake / C++
+CMakeCache.txt
+CMakeFiles/
+compile_commands.json
+*.o
+*.so
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# ROS bags, traces, logs
+*.bag
+*.db3
+*.mcap
+*.csv
+*.log

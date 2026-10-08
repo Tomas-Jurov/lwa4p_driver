@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lwa4p_gazebo</name>
+  <version>0.1.0</version>
+  <description>Gazebo Classic simulation of the Schunk LWA 4P + WSG 50 with MoveIt, plus example scripts</description>
+  <maintainer email="tomas.jurov@stuba.sk">tomas</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>lwa4p_description</exec_depend>
+  <exec_depend>lwa4p_moveit_config</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros2_control</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

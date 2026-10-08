@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find lwa4p_description)/urdf/lwa4p.urdf.xacro"/>
+  <xacro:include filename="$(find lwa4p_description)/urdf/realsense_d435.urdf.xacro"/>
+
+  <!-- RealSense D435 on a (not modelled) ceiling mount, looking straight down
+       at the stand and the bin. Change xyz/rpy to match your real mount. -->
+  <xacro:arg name="camera" default="true"/>
+  <xacro:if value="$(arg camera)">
+    <xacro:realsense_d435 parent="world" name="camera" gazebo="true"
+                          xyz="0.45 -0.15 0.95" rpy="0 ${pi / 2} 0"/>
+  </xacro:if>
+
+  <xacro:macro name="pos_joint" params="name initial">
+    <joint name="${name}">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <xacro:pos_joint name="arm_1_joint" initial="0.0"/>
+    <xacro:pos_joint name="arm_2_joint" initial="0.0"/>
+    <xacro:pos_joint name="arm_3_joint" initial="0.0"/>
+    <xacro:pos_joint name="arm_4_joint" initial="0.0"/>
+    <xacro:pos_joint name="arm_5_joint" initial="0.0"/>
+    <xacro:pos_joint name="arm_6_joint" initial="0.0"/>
+    <!-- fingertip gap in metres, as on the real gripper (a massless helper
+         joint in the sim). The two fingers are driven separately by
+         finger_controller; finger_mimic.py sends them -gap/2 and +gap/2.
+         (gazebo_ros2_control's own mimic joints do not work with PID control.) -->
+    <xacro:pos_joint name="gripper_joint" initial="0.085"/>
+    <xacro:pos_joint name="gripper_finger_left_joint" initial="-0.0425"/>
+    <xacro:pos_joint name="gripper_finger_right_joint" initial="0.0425"/>
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <!-- the plugin's own node reads pid_gains from the same file -->
+      <ros>
+        <argument>--ros-args</argument>
+        <argument>--params-file</argument>
+        <argument>$(find lwa4p_gazebo)/config/ros2_controllers.yaml</argument>
+      </ros>
+      <parameters>$(find lwa4p_gazebo)/config/ros2_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+  <!-- robot links without gravity: the arm would otherwise sag before the
+       controllers start (the real arm holds with its brakes). Objects in the
+       world still fall normally. -->
+  <xacro:macro name="colour" params="link material">
+    <gazebo reference="${link}">
+      <material>${material}</material>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  </xacro:macro>
+  <xacro:colour link="arm_podest_link" material="Gazebo/Grey"/>
+  <xacro:colour link="arm_1_link" material="Gazebo/DarkBlue"/>
+  <xacro:colour link="arm_2_link" material="Gazebo/Grey"/>
+  <xacro:colour link="arm_3_link" material="Gazebo/DarkBlue"/>
+  <xacro:colour link="arm_4_link" material="Gazebo/Grey"/>
+  <xacro:colour link="arm_5_link" material="Gazebo/DarkBlue"/>
+  <xacro:colour link="arm_6_link" material="Gazebo/Grey"/>
+
+  <!-- grippy fingertips -->
+  <xacro:macro name="finger_surface" params="link">
+    <gazebo reference="${link}">
+      <material>Gazebo/Black</material>
+      <turnGravityOff>true</turnGravityOff>
+      <mu1>3.0</mu1>
+      <mu2>3.0</mu2>
+      <kp>1e6</kp>
+      <kd>100</kd>
+      <minDepth>0.0</minDepth>
+      <maxVel>0.0</maxVel>
+    </gazebo>
+  </xacro:macro>
+  <xacro:finger_surface link="gripper_finger_left_link"/>
+  <xacro:finger_surface link="gripper_finger_right_link"/>
+  <xacro:colour link="gripper_adapter_link" material="Gazebo/Grey"/>
+  <xacro:colour link="gripper_body_link" material="Gazebo/Grey"/>
+  <xacro:colour link="gripper_gap_link" material="Gazebo/Grey"/>
+</robot>

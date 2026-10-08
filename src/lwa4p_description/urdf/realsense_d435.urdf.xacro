@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<!-- Intel RealSense D435 as a simple box (90 x 25 x 25 mm).
+
+     Frames (same names as the realsense2_camera driver):
+       ${name}_link                   x forward (out of the lens), z up
+       ${name}_color_optical_frame    z forward, x right, y down
+       ${name}_depth_optical_frame    same pose (the sim depth is aligned to colour)
+
+     gazebo:=true adds a simulated RGB-D sensor (Gazebo Classic) publishing
+       /${name}/color/image_raw          /${name}/color/camera_info
+       /${name}/depth/image_rect_raw     /${name}/depth/camera_info   (metres, aligned to colour)
+       /${name}/depth/color/points       (sensor_msgs/PointCloud2, XYZRGB) -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="realsense_d435" params="parent name:=camera xyz rpy gazebo:=false rate:=5 width:=424 height:=240">
+    <joint name="${name}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${name}_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="-0.0125 0 0"/>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+        <material name="realsense_grey"><color rgba="0.55 0.55 0.6 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="-0.0125 0 0"/>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.072"/>
+        <inertia ixx="5e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="5e-5"/>
+      </inertial>
+    </link>
+
+    <joint name="${name}_color_optical_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_color_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi / 2} 0 ${-pi / 2}"/>
+    </joint>
+    <link name="${name}_color_optical_frame"/>
+    <joint name="${name}_depth_optical_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_depth_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi / 2} 0 ${-pi / 2}"/>
+    </joint>
+    <link name="${name}_depth_optical_frame"/>
+
+    <xacro:if value="${gazebo}">
+      <gazebo reference="${name}_link">
+        <material>Gazebo/Grey</material>
+        <turnGravityOff>true</turnGravityOff>
+        <sensor name="${name}" type="depth">
+          <always_on>true</always_on>
+          <update_rate>${rate}</update_rate>
+          <visualize>false</visualize>
+          <camera name="${name}">
+            <horizontal_fov>1.211</horizontal_fov>  <!-- 69.4 deg, D435 colour -->
+            <image>
+              <width>${width}</width>
+              <height>${height}</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>6.0</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.002</stddev>
+            </noise>
+          </camera>
+          <plugin name="${name}_driver" filename="libgazebo_ros_camera.so">
+            <ros>
+              <namespace>${name}</namespace>
+              <remapping>${name}/image_raw:=color/image_raw</remapping>
+              <remapping>${name}/camera_info:=color/camera_info</remapping>
+              <remapping>${name}/depth/image_raw:=depth/image_rect_raw</remapping>
+              <remapping>${name}/depth/camera_info:=depth/camera_info</remapping>
+              <remapping>${name}/points:=depth/color/points</remapping>
+            </ros>
+            <camera_name>${name}</camera_name>
+            <frame_name>${name}_color_optical_frame</frame_name>
+            <hack_baseline>0.0</hack_baseline>
+            <min_depth>0.1</min_depth>
+            <max_depth>6.0</max_depth>
+          </plugin>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
+</robot>

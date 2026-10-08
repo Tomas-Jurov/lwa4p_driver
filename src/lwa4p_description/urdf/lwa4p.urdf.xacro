@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!-- Schunk LWA 4P. Kinematics/limits from ipa320/schunk_modular_robotics
+     (schunk_description/urdf/lwa4p). Joint i = CANopen node i+2. -->
+<robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="mesh" value="package://lwa4p_description/meshes/lwa4p"/>
+  <xacro:property name="safety_offset" value="0.02"/>
+  <xacro:property name="lim" value="${2.967 - safety_offset}"/>
+  <xacro:property name="lim3" value="${2.714 - safety_offset}"/>
+  <xacro:property name="vel" value="1.26"/>
+
+  <material name="schunk_blue"><color rgba="0.0 0.25 0.6 1.0"/></material>
+  <material name="schunk_grey"><color rgba="0.75 0.75 0.75 1.0"/></material>
+
+  <xacro:macro name="arm_link" params="name stl material">
+    <link name="${name}">
+      <visual>
+        <geometry><mesh filename="${mesh}/${stl}.stl"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <geometry><mesh filename="${mesh}/${stl}.stl"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="1.0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="arm_joint" params="n parent child xyz rpy effort lower upper">
+    <joint name="arm_${n}_joint" type="revolute">
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="${effort}" velocity="${vel}" lower="${lower}" upper="${upper}"/>
+    </joint>
+  </xacro:macro>
+
+  <link name="world"/>
+
+  <!-- pedestal (the base with the LWA / AUX connectors) -->
+  <joint name="arm_podest_joint" type="fixed">
+    <parent link="world"/>
+    <child link="arm_podest_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="arm_podest_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 ${pi} 0"/>
+      <geometry><mesh filename="${mesh}/arm_base_link.stl"/></geometry>
+      <material name="schunk_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 ${pi} 0"/>
+      <geometry><mesh filename="${mesh}/arm_base_link.stl"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="arm_base_joint" type="fixed">
+    <parent link="arm_podest_link"/>
+    <child link="arm_base_link"/>
+    <origin xyz="0 0 0.10" rpy="0 0 0"/>
+  </joint>
+  <!-- tiny inertial: Gazebo drops a massless link together with the whole arm below it -->
+  <link name="arm_base_link">
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+
+  <xacro:arm_joint n="1" parent="arm_base_link" child="arm_1_link"
+                   xyz="0 0 0" rpy="0 0 0" effort="370" lower="${-lim}" upper="${lim}"/>
+  <xacro:arm_link name="arm_1_link" stl="arm_1_link" material="schunk_blue"/>
+
+  <xacro:arm_joint n="2" parent="arm_1_link" child="arm_2_link"
+                   xyz="0 0 0" rpy="1.5708 0 0" effort="370" lower="${-lim}" upper="${lim}"/>
+  <xacro:arm_link name="arm_2_link" stl="arm_2_link" material="schunk_grey"/>
+
+  <xacro:arm_joint n="3" parent="arm_2_link" child="arm_3_link"
+                   xyz="0 0.350 0" rpy="0 3.14159 0" effort="176" lower="${-lim3}" upper="${lim3}"/>
+  <xacro:arm_link name="arm_3_link" stl="arm_3_link" material="schunk_blue"/>
+
+  <xacro:arm_joint n="4" parent="arm_3_link" child="arm_4_link"
+                   xyz="0 0 0" rpy="-1.5708 3.14159 0" effort="176" lower="${-lim}" upper="${lim}"/>
+  <xacro:arm_link name="arm_4_link" stl="arm_4_link" material="schunk_grey"/>
+
+  <xacro:arm_joint n="5" parent="arm_4_link" child="arm_5_link"
+                   xyz="0 0.005263 0.305" rpy="1.5708 0 3.14159" effort="41.6" lower="${-lim}" upper="${lim}"/>
+  <xacro:arm_link name="arm_5_link" stl="arm_5_link" material="schunk_blue"/>
+
+  <xacro:arm_joint n="6" parent="arm_5_link" child="arm_6_link"
+                   xyz="0 0 0" rpy="-1.5708 0 0" effort="20.1" lower="${-lim}" upper="${lim}"/>
+  <xacro:arm_link name="arm_6_link" stl="arm_6_link" material="schunk_grey"/>
+
+  <!-- tool flange face (end of the arm_6 mesh, z = 0.084) -->
+  <joint name="arm_tool0_joint" type="fixed">
+    <parent link="arm_6_link"/>
+    <child link="arm_tool0"/>
+    <origin xyz="0 0 0.084" rpy="0 0 0"/>
+  </joint>
+  <link name="arm_tool0"/>
+
+  <xacro:arg name="gripper" default="true"/>
+  <!-- rotate the gripper about the flange axis if RViz doesn't match the real arm -->
+  <xacro:arg name="gripper_yaw" default="1.5708"/>
+  <xacro:if value="$(arg gripper)">
+    <xacro:include filename="$(find lwa4p_description)/urdf/wsg50.urdf.xacro"/>
+    <xacro:wsg50 parent="arm_tool0" yaw="$(arg gripper_yaw)"/>
+  </xacro:if>
+</robot>

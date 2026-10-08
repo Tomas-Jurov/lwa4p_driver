@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lwa4p_description</name>
+  <version>0.1.0</version>
+  <description>URDF and meshes for the Schunk LWA 4P (kinematics and meshes from ipa320/schunk_modular_robotics)</description>
+  <maintainer email="tomas.jurov@stuba.sk">tomas</maintainer>
+  <license>LGPL-3.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>
