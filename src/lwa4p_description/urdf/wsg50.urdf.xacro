@@ -1,23 +1,38 @@
 <?xml version="1.0"?>
-<!-- Weiss/Schunk WSG 50-110 on the FWA115 adapter, simple box geometry.
-     Dimensions are approximate (measure and adjust): adapter 20 mm,
-     housing 146 x 52 x 72 mm, fingers 20 x 30 x 90 mm.
+<!-- Weiss/Schunk WSG 50-110 on an adapter plate, simple box geometry.
+
+     From the WSG 50 manual (05.00, 389474, "3.1 Outer dimensions"):
+       housing 146 x 50 x 72.5 mm (x = jaw direction), Ø50 ISO mounting in the
+       centre of the bottom face, base jaws stick out to 96.5 mm (24 mm above
+       the housing), ~18 mm wide in x, jaw inner faces 0..110 mm apart.
+       Weight 1.15 kg, 5..80 N, 5..420 mm/s.
+     Measured on the real gripper: the mounted fingers reach 9.75 mm further
+       inwards than each jaw (fingertip gap = jaw width - 19.5 mm).
+     NOT measured yet (change when you know them):
+       adapter_h (flange -> housing bottom), jaw_d (jaw depth in y),
+       finger_t / finger_w / finger_l (finger thickness, width, length above
+       the jaw). finger_l is chosen so the fingertips are 162 mm above the
+       housing bottom, as in the earlier model (keeps gripper_tcp unchanged).
 
      gripper_joint = fingertip GAP in metres (same number the gripper node,
-     MoveIt and `arm_cmd.sh grip` use). Each finger mimics half of it.
-     Inertials are rough guesses (WSG 50 ~1.2 kg), only Gazebo uses them. -->
+     MoveIt and `arm_cmd.sh grip` use). Each finger mimics half of it. -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="wsg50" params="parent yaw:=0">
     <xacro:property name="adapter_h" value="0.020"/>
     <xacro:property name="body_x" value="0.146"/>
-    <xacro:property name="body_y" value="0.052"/>
-    <xacro:property name="body_h" value="0.072"/>
+    <xacro:property name="body_y" value="0.050"/>
+    <xacro:property name="body_h" value="0.0725"/>
+    <xacro:property name="jaw_w" value="0.018"/>
+    <xacro:property name="jaw_d" value="0.030"/>
+    <xacro:property name="jaw_h" value="0.024"/>
+    <xacro:property name="jaw_inset" value="0.00975"/>
     <xacro:property name="finger_t" value="0.020"/>
     <xacro:property name="finger_w" value="0.030"/>
-    <xacro:property name="finger_l" value="0.090"/>
+    <xacro:property name="finger_l" value="0.0655"/>
     <xacro:property name="gap_max" value="0.0895"/>
 
     <material name="wsg_grey"><color rgba="0.6 0.6 0.62 1.0"/></material>
+    <material name="wsg_jaw"><color rgba="0.35 0.35 0.38 1.0"/></material>
     <material name="wsg_black"><color rgba="0.1 0.1 0.1 1.0"/></material>
 
     <joint name="gripper_adapter_joint" type="fixed">
@@ -28,16 +43,17 @@
     <link name="gripper_adapter_link">
       <visual>
         <origin xyz="0 0 ${adapter_h / 2}"/>
-        <geometry><cylinder radius="0.042" length="${adapter_h}"/></geometry>
+        <geometry><cylinder radius="0.0325" length="${adapter_h}"/></geometry>
         <material name="wsg_grey"/>
       </visual>
       <collision>
         <origin xyz="0 0 ${adapter_h / 2}"/>
-        <geometry><cylinder radius="0.042" length="${adapter_h}"/></geometry>
+        <geometry><cylinder radius="0.0325" length="${adapter_h}"/></geometry>
       </collision>
       <inertial>
-        <mass value="0.2"/>
-        <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+        <origin xyz="0 0 ${adapter_h / 2}"/>
+        <mass value="0.15"/>
+        <inertia ixx="4.5e-5" ixy="0" ixz="0" iyy="4.5e-5" iyz="0" izz="8e-5"/>
       </inertial>
     </link>
 
@@ -57,8 +73,9 @@
         <geometry><box size="${body_x} ${body_y} ${body_h}"/></geometry>
       </collision>
       <inertial>
-        <mass value="1.2"/>
-        <inertia ixx="3e-3" ixy="0" ixz="0" iyy="3e-3" iyz="0" izz="3e-3"/>
+        <origin xyz="0 0 ${body_h / 2}"/>
+        <mass value="0.95"/>
+        <inertia ixx="6.1e-4" ixy="0" ixz="0" iyy="2.1e-3" iyz="0" izz="1.9e-3"/>
       </inertial>
     </link>
 
@@ -78,6 +95,8 @@
       </inertial>
     </link>
 
+    <!-- one finger = base jaw (on the housing top) + mounted finger.
+         Link origin: on the housing top, at the inner (gripping) face of the finger. -->
     <xacro:macro name="finger" params="side sign">
       <joint name="gripper_finger_${side}_joint" type="prismatic">
         <parent link="gripper_body_link"/>
@@ -87,21 +106,29 @@
         <limit lower="${-gap_max}" upper="${gap_max}" effort="80" velocity="0.42"/>
         <mimic joint="gripper_joint" multiplier="${sign * 0.5}" offset="0"/>
       </joint>
-      <!-- link origin = inner (gripping) face of the finger -->
       <link name="gripper_finger_${side}_link">
         <visual>
-          <origin xyz="${sign * finger_t / 2} 0 ${finger_l / 2}"/>
+          <origin xyz="${sign * (jaw_inset + jaw_w / 2)} 0 ${jaw_h / 2}"/>
+          <geometry><box size="${jaw_w} ${jaw_d} ${jaw_h}"/></geometry>
+          <material name="wsg_jaw"/>
+        </visual>
+        <visual>
+          <origin xyz="${sign * finger_t / 2} 0 ${jaw_h + finger_l / 2}"/>
           <geometry><box size="${finger_t} ${finger_w} ${finger_l}"/></geometry>
           <material name="wsg_black"/>
         </visual>
         <collision>
-          <origin xyz="${sign * finger_t / 2} 0 ${finger_l / 2}"/>
+          <origin xyz="${sign * (jaw_inset + jaw_w / 2)} 0 ${jaw_h / 2}"/>
+          <geometry><box size="${jaw_w} ${jaw_d} ${jaw_h}"/></geometry>
+        </collision>
+        <collision>
+          <origin xyz="${sign * finger_t / 2} 0 ${jaw_h + finger_l / 2}"/>
           <geometry><box size="${finger_t} ${finger_w} ${finger_l}"/></geometry>
         </collision>
         <inertial>
-          <origin xyz="${sign * finger_t / 2} 0 ${finger_l / 2}"/>
-          <mass value="0.05"/>
-          <inertia ixx="4e-5" ixy="0" ixz="0" iyy="4e-5" iyz="0" izz="5e-6"/>
+          <origin xyz="${sign * 0.012} 0 0.035"/>
+          <mass value="0.1"/>
+          <inertia ixx="5e-5" ixy="0" ixz="0" iyy="5.5e-5" iyz="0" izz="1.5e-5"/>
         </inertial>
       </link>
     </xacro:macro>
@@ -112,7 +139,7 @@
     <joint name="gripper_tcp_joint" type="fixed">
       <parent link="gripper_body_link"/>
       <child link="gripper_tcp"/>
-      <origin xyz="0 0 ${body_h + finger_l - 0.015}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${body_h + jaw_h + finger_l - 0.015}" rpy="0 0 0"/>
     </joint>
     <link name="gripper_tcp"/>
   </xacro:macro>

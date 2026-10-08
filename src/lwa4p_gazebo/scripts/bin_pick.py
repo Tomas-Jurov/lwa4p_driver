@@ -38,12 +38,13 @@ BIN_FLOOR = -0.05               # top of the bin bottom
 BIN_WALL_TOP = 0.04
 APPROACH_Z = 0.15               # TCP height above the bin before going down
 GRIP_OPEN = 0.07                # opening for dropping
-FINGER_T, FINGER_W = 0.020, 0.030   # finger thickness / width (see wsg50.urdf.xacro)
+FINGER_T, FINGER_W = 0.028, 0.030   # how far finger+base jaw reach outwards / their width (wsg50.urdf.xacro)
 SPEED, SPEED_HOLDING = 0.5, 0.25
 FINGER_BELOW_TOP = 0.025        # fingertips this far below the top of the object
 TCP_ABOVE_FINGERTIP = 0.015     # gripper_tcp is 15 mm above the fingertips
 DROP = [(-0.06, -0.04), (0.06, -0.04), (-0.06, 0.05), (0.06, 0.05), (0.0, 0.0)]   # in the output bin
 DROP_Z = 0.12
+TRANSIT_Z = 0.30                # carry objects at this TCP height (above the stand and the tube)
 
 
 def quat_to_matrix(q):
@@ -270,7 +271,10 @@ def main():
         log.info(f"holding it, fingers at {gap * 1000:.0f} mm")
         ox, oy = DROP[picked % len(DROP)]
         dx, dy = OUT_BIN_CENTER[0] + ox, OUT_BIN_CENTER[1] + oy
-        if not robot.pose(dx, dy, DROP_Z):
+        # up, across high above everything, down (each planned move retried once)
+        if not (robot.line(x, y, TRANSIT_Z) or robot.pose(x, y, TRANSIT_Z)) \
+                or not (robot.pose(dx, dy, TRANSIT_Z) or robot.pose(dx, dy, TRANSIT_Z)) \
+                or not (robot.line(dx, dy, DROP_Z) or robot.pose(dx, dy, DROP_Z)):
             log.error("cannot reach the output bin - stopping (still holding the object)")
             break
         robot.scale = SPEED
