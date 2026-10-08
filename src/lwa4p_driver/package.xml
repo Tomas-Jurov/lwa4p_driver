@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lwa4p_driver</name>
+  <version>0.1.0</version>
+  <description>CANopen (SocketCAN) driver for the Schunk LWA 4P: joint_states + FollowJointTrajectory</description>
+  <maintainer email="tomas.jurov@stuba.sk">tomas</maintainer>
+  <license>MIT</license>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>lwa4p_description</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

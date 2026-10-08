@@ -1,0 +1,46 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    gripper_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    # the two fingers, fed by finger_mimic.py from gripper_joint
+    finger_controller:
+      type: forward_command_controller/ForwardCommandController
+
+arm_controller:
+  ros__parameters:
+    joints: [arm_1_joint, arm_2_joint, arm_3_joint, arm_4_joint, arm_5_joint, arm_6_joint]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+
+gripper_controller:
+  ros__parameters:
+    joints: [gripper_joint]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+
+finger_controller:
+  ros__parameters:
+    joints: [gripper_finger_left_joint, gripper_finger_right_joint]
+    interface_name: position
+
+# Gazebo drives every joint with a PID (force) loop towards the controller's
+# position command, instead of teleporting it. Teleported joints have zero
+# velocity, so friction would never carry a grasped object along.
+gazebo_ros2_control:
+  ros__parameters:
+    pid_gains:
+      position:
+        arm_1_joint: {kp: 1000.0, kd: 10.0, ki: 0.0, max_integral_error: 0.0}
+        arm_2_joint: {kp: 1000.0, kd: 10.0, ki: 0.0, max_integral_error: 0.0}
+        arm_3_joint: {kp: 1000.0, kd: 10.0, ki: 0.0, max_integral_error: 0.0}
+        arm_4_joint: {kp: 300.0, kd: 3.0, ki: 0.0, max_integral_error: 0.0}
+        arm_5_joint: {kp: 300.0, kd: 3.0, ki: 0.0, max_integral_error: 0.0}
+        arm_6_joint: {kp: 300.0, kd: 3.0, ki: 0.0, max_integral_error: 0.0}
+        gripper_joint: {kp: 2000.0, kd: 0.5, ki: 0.0, max_integral_error: 0.0}
+        gripper_finger_left_joint: {kp: 2000.0, kd: 1.0, ki: 0.0, max_integral_error: 0.0}
+        gripper_finger_right_joint: {kp: 2000.0, kd: 1.0, ki: 0.0, max_integral_error: 0.0}

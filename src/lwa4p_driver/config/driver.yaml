@@ -1,0 +1,19 @@
+lwa4p_driver:
+  ros__parameters:
+    can_channel: can0
+    node_ids: [3, 4, 5, 6, 7, 8]
+    joint_names: [arm_1_joint, arm_2_joint, arm_3_joint, arm_4_joint, arm_5_joint, arm_6_joint]
+    joint_signs: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    joint_offsets_deg: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    rate_hz: 20.0
+    lookahead_s: 0.3
+    max_velocity_deg_s: 30.0
+    acceleration_deg_s2: 60.0
+    
+    limit_margin_deg: 3.0
+    start_tolerance_deg: 2.0
+    path_tolerance_deg: 8.0
+    goal_tolerance_deg: 0.5
+    goal_time_tolerance_s: 3.0
+    enable_settle_s: 0.3
+    controller_name: arm_controller

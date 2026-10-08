@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: lwa4p_description
+    relative_path: urdf/lwa4p.urdf.xacro
+  srdf:
+    relative_path: config/lwa4p.srdf
+  package_settings:
+    author_name: Tomas Jurov
+    author_email: tomas.jurov@stuba.sk
+    generated_timestamp: 1791451164
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
