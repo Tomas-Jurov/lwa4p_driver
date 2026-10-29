@@ -6,6 +6,9 @@
 
     <xacro:include filename="lwa4p.ros2_control.xacro" />
 
+    <!-- fixed obstacles around the real robot (table, frame, dispenser, racks, ...) -->
+    <xacro:include filename="workspace_obstacles.urdf.xacro" />
+
 
     <xacro:lwa4p_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
 
