@@ -82,4 +82,71 @@
     <disable_collisions link1="gripper_adapter_link" link2="gripper_finger_right_link" reason="Never"/>
     <disable_collisions link1="arm_6_link" link2="gripper_finger_left_link" reason="Never"/>
     <disable_collisions link1="arm_6_link" link2="gripper_finger_right_link" reason="Never"/>
+    <!-- fixed workspace obstacles (workspace_obstacles.urdf.xacro) never move relative
+         to each other or to the robot base -->
+    <disable_collisions link1="obstacle_table" link2="obstacle_tprofile_top_bar" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_tprofile_post_minus_x" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_tprofile_post_plus_x" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_table" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_tprofile_post_minus_x" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_tprofile_post_plus_x" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_top_bar" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_tprofile_post_plus_x" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_minus_x" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tprofile_post_plus_x" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_head" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_head" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_head" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_head" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_head" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_tube" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_tube" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_tube" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_cap_dispenser_tube" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tube_racks" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tube_racks" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tube_racks" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tube_holder" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_tube_holder" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="obstacle_yellow_robot_cover_motor" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_table" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_table" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_tprofile_top_bar" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_tprofile_top_bar" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_tprofile_post_minus_x" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_tprofile_post_minus_x" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_tprofile_post_plus_x" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_tprofile_post_plus_x" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_cap_dispenser_head" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_cap_dispenser_tube" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_tube_racks" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_tube_holder" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_yellow_robot_cover_motor" reason="Adjacent"/>
+    <disable_collisions link1="arm_podest_link" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
+    <disable_collisions link1="arm_base_link" link2="obstacle_yellow_robot_body" reason="Adjacent"/>
 </robot>

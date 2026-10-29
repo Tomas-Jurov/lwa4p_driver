@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!-- Fixed obstacles around the real LWA 4P, so MoveIt never plans into them.
+     Part of MoveIt's robot description only (included from lwa4p.urdf.xacro
+     in this package): every planner, RViz Plan & Execute and collision check
+     sees them, nothing has to be started.
+
+     Measured with the hand-eye calibrated wrist camera on 2026-10-29
+     (depth scans, colour segmentation, multi-view space carving); each box is
+     the measured extent plus ~10 mm. Frame: world (= robot base), metres.
+     If something on the table is moved, update its box here. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="obstacle" params="name xyz size">
+    <link name="${name}">
+      <visual>
+        <geometry><box size="${size}"/></geometry>
+        <material name="obstacle_grey"><color rgba="0.6 0.6 0.6 0.5"/></material>
+      </visual>
+      <collision>
+        <geometry><box size="${size}"/></geometry>
+      </collision>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="world"/>
+      <child link="${name}"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- table top at z -0.085 under the whole reach -->
+  <xacro:obstacle name="obstacle_table" xyz="0.275 0.125 -0.105" size="1.05 1.35 0.04"/>
+
+  <!-- T-profile gantry frame (40 mm profiles) behind the robot, plane y ~ -0.33 -->
+  <xacro:obstacle name="obstacle_tprofile_top_bar" xyz="0.20 -0.335 0.68" size="0.62 0.06 0.06"/>
+  <xacro:obstacle name="obstacle_tprofile_post_minus_x" xyz="-0.08 -0.335 0.31" size="0.06 0.06 0.78"/>
+  <xacro:obstacle name="obstacle_tprofile_post_plus_x" xyz="0.47 -0.325 0.31" size="0.08 0.07 0.78"/>
+
+  <!-- cap dispenser hanging from the bar: head + bracket, and the tube next to the +x post -->
+  <xacro:obstacle name="obstacle_cap_dispenser_head" xyz="0.345 -0.293 0.60" size="0.17 0.11 0.10"/>
+  <xacro:obstacle name="obstacle_cap_dispenser_tube" xyz="0.40 -0.34 0.43" size="0.07 0.07 0.27"/>
+
+  <!-- both tube racks on their wooden plank, only up to the rack plate (z ~0.045)
+       so the gripper can still reach the caps -->
+  <xacro:obstacle name="obstacle_tube_racks" xyz="0.339 0.019 -0.016" size="0.35 0.24 0.13"/>
+
+  <!-- single-tube holder on its raised wooden block (top z 0.054) -->
+  <xacro:obstacle name="obstacle_tube_holder" xyz="0.18 0.34 -0.009" size="0.12 0.12 0.146"/>
+
+  <!-- yellow industrial robot next to the table: the "bridge" cover over its
+       motor (top z ~0.37) with the motor below, and its base/arm behind -->
+  <xacro:obstacle name="obstacle_yellow_robot_cover_motor" xyz="-0.495 0.55 0.155" size="0.39 0.34 0.47"/>
+  <xacro:obstacle name="obstacle_yellow_robot_body" xyz="-0.575 0.89 0.35" size="0.49 0.62 0.86"/>
+
+</robot>
