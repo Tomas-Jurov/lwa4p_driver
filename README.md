@@ -65,7 +65,7 @@ flowchart LR
 ```
 lwa4p_ws/                     ← this repo = a colcon workspace
 ├── 80-can.rules              udev rule: can0/can1 up at 500 kbit/s automatically
-├── docker/                   Jazzy test environment (Dockerfile.jazzy, run_jazzy.sh)
+├── docker/                   Humble container (Dockerfile) and Jazzy test environment (Dockerfile.jazzy, run_jazzy.sh)
 └── src/
     ├── lwa4p_description/    URDF/xacro: arm, WSG 50, RealSense D435, meshes
     ├── lwa4p_driver/         CANopen arm driver, WSG 50 gripper node, CLI tools

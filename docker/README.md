@@ -3,6 +3,10 @@
 Run the project in Docker. The container includes ROS 2 Humble, MoveIt 2 and
 Gazebo Classic; your host's Jazzy installation can stay as it is.
 
+To run the stack natively on **Jazzy + Gazebo Harmonic** instead, use
+`Dockerfile.jazzy` and `run_jazzy.sh` (see the main README, *Try Jazzy without
+installing it*).
+
 ## 1. Prepare and build
 
 Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/) and make
@@ -45,9 +49,7 @@ Then run inside the container:
 
 ```bash
 ros2 control list_controllers
-ros2 run lwa4p_gazebo go_to.py home
-ros2 run lwa4p_gazebo go_to.py --gap 0.03
-ros2 run lwa4p_gazebo bin_pick.py --look
+ros2 topic list
 ```
 
 For a lighter Gazebo session, append `gui:=false` to the launch command.
@@ -73,9 +75,8 @@ docker exec -it lwa4p-light bash
 Inside the container:
 
 ```bash
-ros2 run lwa4p_gazebo go_to.py home
-ros2 run lwa4p_gazebo go_to.py --joints 0 30 60 0 90 0
-ros2 run lwa4p_gazebo go_to.py --gap 0.03
+ros2 control list_controllers
+ros2 topic list
 ```
 
 ## 3. Real robot
