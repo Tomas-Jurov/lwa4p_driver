@@ -29,12 +29,18 @@ class GripperNode(Node):
         rate = p("state_rate_hz", 10.0).value
 
         self.lock = threading.Lock()
-        self.wsg = WSG(self.channel)
-        with self.lock:
-            self.wsg.set_accel(self.accel)
-            if self.wsg.grasping_state() not in ("HOLDING", "GRASPING"):
-                self.wsg.call(0x38)                 # tare force measurement (only when empty)
-            flags, names = self.wsg.system_state()
+        try:
+            self.wsg = WSG(self.channel)
+            with self.lock:
+                self.wsg.set_accel(self.accel)
+                if self.wsg.grasping_state() not in ("HOLDING", "GRASPING"):
+                    self.wsg.call(0x38)             # tare force measurement (only when empty)
+                flags, names = self.wsg.system_state()
+        except Exception as e:
+            msg = (f"WSG 50 on {self.channel} not usable: {e}. Is {self.channel} UP "
+                   f"(ip -br link), the gripper powered (blue LED) and nothing else using {self.channel}?")
+            self.get_logger().fatal(msg)
+            raise SystemExit(msg)
         self.referenced = "REFERENCED" in names
         self.gap_mm, self.force_n, self.gstate = 0.0, 0.0, "?"
         self.poll()
@@ -165,7 +171,11 @@ class GripperNode(Node):
 
 def main():
     rclpy.init()
-    node = GripperNode()
+    try:
+        node = GripperNode()
+    except SystemExit:
+        rclpy.shutdown()
+        raise
     ex = MultiThreadedExecutor(num_threads=3)
     ex.add_node(node)
     try:

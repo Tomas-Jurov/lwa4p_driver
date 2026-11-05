@@ -5,9 +5,11 @@
 
   <xacro:property name="mesh" value="package://lwa4p_description/meshes/lwa4p"/>
   <!-- limits from the SCHUNK datasheets: range = preset software limit switches
-       (LWA 4P manual 3.2: +-170 deg, axis 3 +-155 deg) minus a small margin,
+       (LWA 4P manual 3.2: +-170 deg, axis 3 +-155 deg) minus 4 deg - must stay
+       inside the driver's limit_margin_deg (3 deg) or MoveIt plans goals the
+       driver then refuses ("outside drive limits"),
        72 deg/s, effort = max. torque (ERB 145: 64 Nm, ERB 115: 19 Nm) -->
-  <xacro:property name="safety_offset" value="0.02"/>
+  <xacro:property name="safety_offset" value="${radians(4)}"/>
   <xacro:property name="lim" value="${radians(170) - safety_offset}"/>
   <xacro:property name="lim3" value="${radians(155) - safety_offset}"/>
   <xacro:property name="vel" value="${radians(72)}"/>
@@ -110,11 +112,42 @@
   </joint>
   <link name="arm_tool0"/>
 
+  <!-- Hand-eye calibrated RealSense D435 on the flange. Only camera_link is
+       attached here; realsense2_camera publishes camera_link -> color/depth
+       optical frames from the factory extrinsics. config/camera_calibration.yaml
+       holds the hand-eye calibration result (arm_tool0 -> camera_link). -->
+  <xacro:arg name="wrist_camera" default="true"/>
+  <xacro:if value="$(arg wrist_camera)">
+    <xacro:property name="cam" value="${xacro.load_yaml('$(find lwa4p_description)/config/camera_calibration.yaml')['camera_link']}"/>
+    <joint name="camera_mount_joint" type="fixed">
+      <parent link="arm_tool0"/>
+      <child link="camera_link"/>
+      <origin xyz="${' '.join(str(v) for v in cam['xyz'])}" rpy="${' '.join(str(v) for v in cam['rpy'])}"/>
+    </joint>
+    <!-- D435 (90 x 25 x 25 mm) plus bracket, screws and cable plug; camera_link
+         x = optical axis, y = along the body. Generous because the extrinsic is
+         only good to ~1 cm and the bracket screw once jammed against arm_4. -->
+    <link name="camera_link">
+      <collision>
+        <origin xyz="-0.02 0 0" rpy="0 0 0"/>
+        <geometry><box size="0.06 0.13 0.05"/></geometry>
+      </collision>
+    </link>
+  </xacro:if>
+
+  <!-- SCHUNK FTM 75 force-torque sensor between the flange and the gripper:
+       adds 52.75 mm, the gripper then sits on ftm_tool0 -->
+  <xacro:arg name="ftm" default="true"/>
+  <xacro:if value="$(arg ftm)">
+    <xacro:include filename="$(find lwa4p_description)/urdf/ftm75.urdf.xacro"/>
+    <xacro:ftm75 parent="arm_tool0"/>
+  </xacro:if>
+
   <xacro:arg name="gripper" default="true"/>
   <!-- rotate the gripper about the flange axis if RViz doesn't match the real arm -->
   <xacro:arg name="gripper_yaw" default="1.5708"/>
   <xacro:if value="$(arg gripper)">
     <xacro:include filename="$(find lwa4p_description)/urdf/wsg50.urdf.xacro"/>
-    <xacro:wsg50 parent="arm_tool0" yaw="$(arg gripper_yaw)"/>
+    <xacro:wsg50 parent="${'ftm_tool0' if '$(arg ftm)' == 'true' else 'arm_tool0'}" yaw="$(arg gripper_yaw)"/>
   </xacro:if>
 </robot>

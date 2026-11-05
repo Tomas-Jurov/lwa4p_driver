@@ -33,3 +33,24 @@ compile_commands.json
 *.mcap
 *.csv
 *.log
+
+# ---- local only: not part of the student repository ----
+# example solutions and own task scripts (installed locally if present)
+src/lwa4p_gazebo/scripts/*.py
+!src/lwa4p_gazebo/scripts/finger_mimic.py
+!src/lwa4p_gazebo/scripts/gz_cloud_frame.py
+# hand-eye calibration tools (the result config/camera_calibration.yaml is in the repo)
+src/lwa4p_driver/lwa4p_driver/calibrate_hand_eye.py
+src/lwa4p_driver/lwa4p_driver/hand_eye_to_urdf.py
+src/lwa4p_driver/lwa4p_driver/board_center_perpendicular.py
+# OctoMap sensor and workspace-object detection configs
+src/lwa4p_moveit_config/config/sensors_3d.yaml
+src/lwa4p_moveit_config/config/workspace_objects.yaml
+# calibration boards, scans and probes
+charuco*
+*.ply
+scale_check*
+tool_to_camera.yaml
+can1_probe.sh
+# Isaac Sim model (kept locally, not part of the student repository)
+isaac/

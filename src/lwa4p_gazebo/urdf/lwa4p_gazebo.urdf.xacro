@@ -1,29 +1,50 @@
 <?xml version="1.0"?>
 <robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- classic = Gazebo Classic 11 (ROS 2 Humble), gz = Gazebo Harmonic (ROS 2 Jazzy).
+       gazebo.launch.py sets it from ROS_DISTRO. -->
+  <xacro:arg name="sim" default="classic"/>
+  <xacro:property name="gz" value="${'$(arg sim)' == 'gz'}"/>
+  <!-- the robot description's wrist camera is only a collision box; the sim adds
+       the full simulated RealSense below, at the same calibrated pose -->
+  <xacro:arg name="wrist_camera" default="false"/>
   <xacro:include filename="$(find lwa4p_description)/urdf/lwa4p.urdf.xacro"/>
   <xacro:include filename="$(find lwa4p_description)/urdf/realsense_d435.urdf.xacro"/>
 
-  <!-- RealSense D435 on a (not modelled) ceiling mount, looking straight down
-       at the stand and the bin. Change xyz/rpy to match your real mount. -->
+  <!-- RealSense D435 on the wrist, exactly where the real one is: the hand-eye
+       calibration result config/camera_calibration.yaml (arm_tool0 -> camera_link) -->
   <xacro:arg name="camera" default="true"/>
   <xacro:if value="$(arg camera)">
-    <xacro:realsense_d435 parent="world" name="camera" gazebo="true"
-                          xyz="0.45 -0.15 0.95" rpy="0 ${pi / 2} 0"/>
+    <xacro:property name="cam" value="${xacro.load_yaml('$(find lwa4p_description)/config/camera_calibration.yaml')['camera_link']}"/>
+    <xacro:realsense_d435 parent="${cam['parent']}" name="camera" gazebo="${'gz' if gz else 'true'}"
+                          xyz="${' '.join(str(v) for v in cam['xyz'])}"
+                          rpy="${' '.join(str(v) for v in cam['rpy'])}"/>
   </xacro:if>
 
+  <xacro:macro name="pos_joint_interfaces" params="initial">
+    <command_interface name="position"/>
+    <state_interface name="position">
+      <param name="initial_value">${initial}</param>
+    </state_interface>
+    <state_interface name="velocity"/>
+  </xacro:macro>
   <xacro:macro name="pos_joint" params="name initial">
-    <joint name="${name}">
-      <command_interface name="position"/>
-      <state_interface name="position">
-        <param name="initial_value">${initial}</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-    </joint>
+    <!-- mimic="false": the URDF mimic tags are for MoveIt; in the sim every
+         joint here is commanded directly (Jazzy's ros2_control reads mimic tags) -->
+    <xacro:if value="${gz}">
+      <joint name="${name}" mimic="false">
+        <xacro:pos_joint_interfaces initial="${initial}"/>
+      </joint>
+    </xacro:if>
+    <xacro:unless value="${gz}">
+      <joint name="${name}">
+        <xacro:pos_joint_interfaces initial="${initial}"/>
+      </joint>
+    </xacro:unless>
   </xacro:macro>
 
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      <plugin>${'gz_ros2_control/GazeboSimSystem' if gz else 'gazebo_ros2_control/GazeboSystem'}</plugin>
     </hardware>
     <xacro:pos_joint name="arm_1_joint" initial="0.0"/>
     <xacro:pos_joint name="arm_2_joint" initial="0.0"/>
@@ -40,6 +61,14 @@
     <xacro:pos_joint name="gripper_finger_right_joint" initial="0.0425"/>
   </ros2_control>
 
+  <xacro:if value="${gz}">
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find lwa4p_gazebo)/config/ros2_controllers_gz.yaml</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+  <xacro:unless value="${gz}">
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <!-- the plugin's own node reads pid_gains from the same file -->
@@ -51,6 +80,7 @@
       <parameters>$(find lwa4p_gazebo)/config/ros2_controllers.yaml</parameters>
     </plugin>
   </gazebo>
+  </xacro:unless>
 
   <!-- robot links without gravity: the arm would otherwise sag before the
        controllers start (the real arm holds with its brakes). Objects in the
@@ -84,6 +114,7 @@
   </xacro:macro>
   <xacro:finger_surface link="gripper_finger_left_link"/>
   <xacro:finger_surface link="gripper_finger_right_link"/>
+  <xacro:colour link="ftm_link" material="Gazebo/DarkGrey"/>
   <xacro:colour link="gripper_adapter_link" material="Gazebo/Grey"/>
   <xacro:colour link="gripper_body_link" material="Gazebo/Grey"/>
   <xacro:colour link="gripper_gap_link" material="Gazebo/Grey"/>

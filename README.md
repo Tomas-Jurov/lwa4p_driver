@@ -1,14 +1,15 @@
 <div align="center">
 
-# 🦾 Schunk LWA 4P · ROS 2 Humble
+# 🦾 Schunk LWA 4P · ROS 2 Humble & Jazzy
 
-**CANopen driver, MoveIt 2, WSG 50 gripper and a Gazebo simulation with RGB-D bin picking**
+**CANopen driver, MoveIt 2, WSG 50 gripper and a Gazebo simulation with a wrist RGB-D camera**
 
 [![ROS 2 Humble](https://img.shields.io/badge/ROS_2-Humble-22314E?logo=ros&logoColor=white)](https://docs.ros.org/en/humble/)
-[![Ubuntu 22.04](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu&logoColor=white)](https://releases.ubuntu.com/22.04/)
+[![ROS 2 Jazzy](https://img.shields.io/badge/ROS_2-Jazzy-22314E?logo=ros&logoColor=white)](https://docs.ros.org/en/jazzy/)
+[![Ubuntu 22.04 | 24.04](https://img.shields.io/badge/Ubuntu-22.04_|_24.04-E95420?logo=ubuntu&logoColor=white)](https://releases.ubuntu.com/)
 [![MoveIt 2](https://img.shields.io/badge/MoveIt-2-0B4F9C)](https://moveit.ros.org/)
-[![Gazebo Classic](https://img.shields.io/badge/Gazebo-Classic_11-F58113)](https://classic.gazebosim.org/)
-[![Python 3.10](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Gazebo](https://img.shields.io/badge/Gazebo-Classic_11_|_Harmonic-F58113)](https://gazebosim.org/)
+[![Python](https://img.shields.io/badge/Python-3.10_|_3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CANopen](https://img.shields.io/badge/CANopen-CiA_402-6E4C9E)](https://www.can-cia.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -23,10 +24,9 @@
 | 🔌 **Real-robot driver** | Python CANopen (CiA 402) driver for the 6 ERB modules over SocketCAN. Publishes `/joint_states` and serves a `FollowJointTrajectory` action |
 | ✋ **WSG 50 gripper** | Weiss/Schunk WSG 50-110 on the AUX CAN, with a `GripperCommand` action and force-controlled grasping |
 | 🧭 **MoveIt 2** | Plan and execute from RViz or from Python; named poses `home`, `work1`, `work2`, `open`, `closed` |
-| 🌍 **Gazebo simulation** | Same controller names as the real arm, PID-driven joints and working friction grasps |
-| 📷 **RealSense D435 (simulated)** | RGB, aligned depth and a colored point cloud on RealSense-style topics |
-| 📦 **Bin picking demo** | Point-cloud object detection, grasp planning with wall clearance, Cartesian approach and attached objects |
-| 🐍 **Simple Python API** | `named()`, `pose()`, `line()`, `gripper()`, `add_box()`, `attach_box()` |
+| 🌍 **Gazebo simulation** | Gazebo Classic (Humble) or Harmonic (Jazzy), same controller names as the real arm, physics-driven joints and working friction grasps |
+| 📷 **RealSense D435 on the wrist** | Hand–eye calibrated pose; RGB, aligned depth and a colored point cloud on RealSense-style topics, real and simulated |
+| 📏 **FTM 75 force-torque sensor** | Modelled between flange and gripper (geometry, mass, frames) |
 
 ## 🗺️ How it fits together
 
@@ -34,7 +34,7 @@
 flowchart LR
     subgraph You
         RViz[🖥️ RViz<br/>MotionPlanning]
-        Py[🐍 Python scripts<br/>simple_moveit.py]
+        Py[🐍 your code<br/>MoveIt / ROS 2]
     end
     MG[🧭 move_group<br/>MoveIt 2]
     RViz --> MG
@@ -65,12 +65,12 @@ flowchart LR
 ```
 lwa4p_ws/                     ← this repo = a colcon workspace
 ├── 80-can.rules              udev rule: can0/can1 up at 500 kbit/s automatically
+├── docker/                   Jazzy test environment (Dockerfile.jazzy, run_jazzy.sh)
 └── src/
     ├── lwa4p_description/    URDF/xacro: arm, WSG 50, RealSense D435, meshes
     ├── lwa4p_driver/         CANopen arm driver, WSG 50 gripper node, CLI tools
     ├── lwa4p_moveit_config/  MoveIt 2 config (Setup Assistant) + real.launch.py
     └── lwa4p_gazebo/         Gazebo world, launch, controllers, example scripts
-isaac/                        Isaac Sim / Isaac Lab model for VLA & RL training (see isaac/README.md)
 ```
 
 ---
@@ -79,8 +79,10 @@ isaac/                        Isaac Sim / Isaac Lab model for VLA & RL training 
 
 ### 1️⃣ Install dependencies
 
+The same code runs on **Humble** (Ubuntu 22.04, Gazebo Classic 11) and **Jazzy** (Ubuntu 24.04, Gazebo Harmonic). Pick your distro:
+
 <details open>
-<summary><b>ROS 2 Humble + MoveIt + Gazebo</b></summary>
+<summary><b>ROS 2 Humble + MoveIt + Gazebo Classic</b></summary>
 
 Install [ROS 2 Humble desktop](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html) first, then:
 
@@ -95,11 +97,28 @@ sudo apt install \
 </details>
 
 <details>
+<summary><b>ROS 2 Jazzy + MoveIt + Gazebo Harmonic</b></summary>
+
+Install [ROS 2 Jazzy desktop](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html) first, then:
+
+```bash
+sudo apt install \
+  ros-jazzy-moveit ros-jazzy-xacro \
+  ros-jazzy-ros-gz ros-jazzy-gz-ros2-control \
+  ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-gripper-controllers \
+  python3-colcon-common-extensions python3-rosdep
+```
+
+Gazebo Classic doesn't exist on Jazzy, so the simulation uses Gazebo Harmonic. The launch command is the same, and `gazebo.launch.py` picks the simulator from `ROS_DISTRO`.
+</details>
+
+<details>
 <summary><b>Real robot only: CAN tools and Python CANopen</b></summary>
 
 ```bash
 sudo apt install can-utils
-pip install canopen python-can
+pip install canopen python-can                              # Humble / Ubuntu 22.04
+sudo apt install python3-can && pip install --break-system-packages canopen   # Jazzy / Ubuntu 24.04
 ```
 </details>
 
@@ -107,7 +126,7 @@ pip install canopen python-can
 <summary><b>Optional: mock-hardware demo without physics</b></summary>
 
 ```bash
-sudo apt install ros-humble-gripper-controllers
+sudo apt install ros-$ROS_DISTRO-gripper-controllers
 ```
 </details>
 
@@ -116,7 +135,7 @@ sudo apt install ros-humble-gripper-controllers
 ```bash
 git clone git@github.com:Tomas-Jurov/lwa4p_driver.git ~/lwa4p_ws
 cd ~/lwa4p_ws
-source /opt/ros/humble/setup.bash
+source /opt/ros/humble/setup.bash      # or /opt/ros/jazzy/setup.bash
 rosdep install --from-paths src --ignore-src -y     # any missing ROS packages
 colcon build --symlink-install
 ```
@@ -127,7 +146,7 @@ colcon build --symlink-install
 ### 3️⃣ Every new terminal
 
 ```bash
-source /opt/ros/humble/setup.bash
+source /opt/ros/humble/setup.bash      # or /opt/ros/jazzy/setup.bash
 source ~/lwa4p_ws/install/setup.bash
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
@@ -142,6 +161,20 @@ alias lwa='source /opt/ros/humble/setup.bash && source ~/lwa4p_ws/install/setup.
 
 ---
 
+## 🐳 Try Jazzy without installing it
+
+`docker/` builds an Ubuntu 24.04 + Jazzy + MoveIt + Gazebo Harmonic image. It mounts this workspace's sources read-only, so your own `build/` and `install/` are not touched:
+
+```bash
+docker build -f docker/Dockerfile.jazzy -t lwa4p:jazzy docker/    # ~6.6 GB
+docker/run_jazzy.sh                                               # shell with the workspace built
+docker/run_jazzy.sh ros2 launch lwa4p_gazebo gazebo.launch.py     # Gazebo Harmonic + RViz windows
+```
+
+Remove it again with `docker rmi lwa4p:jazzy osrf/ros:jazzy-desktop-full`.
+
+---
+
 ## 🌍 Simulation
 
 ```bash
@@ -149,26 +182,26 @@ ros2 launch lwa4p_gazebo gazebo.launch.py gui:=false     # RViz only (light)
 ros2 launch lwa4p_gazebo gazebo.launch.py                # + Gazebo window
 ```
 
-Wait for **`You can start planning now!`** and four controllers `activated`. RViz shows the robot, the camera point cloud and the camera image.
+Wait for **`You can start planning now!`** and four controllers `activated`. RViz shows the robot, the camera point cloud and the camera image. On Humble this runs Gazebo Classic 11, on Jazzy Gazebo Harmonic; everything below is the same on both.
 
 The world contains:
 - 🧪 a stand with a 15 mm test tube;
-- 📦 a bin with four objects, and an empty output bin;
-- 📷 a RealSense above the work area.
-
-### 🎮 Try it
-
-| | Command |
-|---|---|
-| 🏠 Named pose | `ros2 run lwa4p_gazebo go_to.py home` &nbsp;(`work1`, `work2`, `open`, `closed`) |
-| 🔢 Joint angles (deg) | `ros2 run lwa4p_gazebo go_to.py --joints 0 30 60 0 90 0` |
-| 📍 Gripper position (m, pointing down) | `ros2 run lwa4p_gazebo go_to.py --pose 0.45 0 0.30` |
-| ✋ Gripper opening (m) | `ros2 run lwa4p_gazebo go_to.py --gap 0.03` |
-| 🧪 Pick and place the test tube | `ros2 run lwa4p_gazebo pick_tube.py` |
-| 👀 Bin picking: detect only | `ros2 run lwa4p_gazebo bin_pick.py --look` |
-| 📦 Bin picking: empty the bin | `ros2 run lwa4p_gazebo bin_pick.py` |
+- 📦 a bin with four objects, and an empty second bin;
+- 📷 the RealSense **on the wrist**, at the hand–eye calibrated pose of the real camera (`lwa4p_description/config/camera_calibration.yaml`).
 
 🔄 **Reset the world:** Ctrl+C the launch and start it again.
+
+### 🔌 Interfaces (same as on the real robot)
+
+| | Name | Type |
+|---|---|---|
+| Plan and execute | `/move_action` | `moveit_msgs/action/MoveGroup` |
+| Arm trajectories | `/arm_controller/follow_joint_trajectory` | `control_msgs/action/FollowJointTrajectory` |
+| Joint states | `/joint_states` | `sensor_msgs/msg/JointState` |
+| Planning groups | `arm` (tip `gripper_tcp`), `gripper` (`gripper_joint` = fingertip gap in m) | SRDF |
+| Named poses | `home`, `work1`, `work2` · gripper `open`, `tube_15mm`, `closed` | SRDF |
+
+In the simulation the gripper is a `FollowJointTrajectory` controller (`/gripper_controller/follow_joint_trajectory`). On the real WSG 50 it is a `GripperCommand` action (`/gripper_controller/gripper_cmd`). Planning through MoveIt's `gripper` group works on both.
 
 ### 📷 Camera topics
 
@@ -176,25 +209,10 @@ The world contains:
 |---|---|
 | `/camera/color/image_raw` | RGB 424 × 240 @ 5 Hz |
 | `/camera/depth/image_rect_raw` | depth in metres, aligned to the colour image |
-| `/camera/depth/color/points` | `PointCloud2` XYZRGB in `camera_color_optical_frame` |
+| `/camera/depth/color/points` | `PointCloud2` XYZRGB (use its `header.frame_id` with TF) |
 | `/camera/color/camera_info` | intrinsics |
 
-### 🐍 Your own program
-
-```python
-import rclpy
-from simple_moveit import SimpleMoveIt   # lwa4p_gazebo/scripts/
-
-rclpy.init()
-robot = SimpleMoveIt()
-robot.add_box("stand", (0.3, 0.4, 0.16), (0.5, 0.0, 0.02))   # obstacle for MoveIt
-robot.named("home")
-robot.gripper(0.085)                 # open (fingertip gap in metres)
-robot.pose(0.45, 0.0, 0.29)          # above the tube, gripper pointing down
-robot.line(0.45, 0.0, 0.17)          # straight down
-robot.gripper(0.013)                 # squeeze the 15 mm tube
-robot.line(0.45, 0.0, 0.29)          # straight up
-```
+Your own scripts can go in `src/lwa4p_gazebo/scripts/`. Every `*.py` there is installed (`ros2 run lwa4p_gazebo <name>.py`), but git ignores it.
 
 📖 More details are in [`src/lwa4p_gazebo/README.md`](src/lwa4p_gazebo/README.md).
 
@@ -231,7 +249,7 @@ ros2 service call /lwa4p_driver/enable std_srvs/srv/Trigger   # each joint: smal
 ros2 run lwa4p_driver gripper_cmd home                        # once after power-up
 ```
 
-Then plan and execute in RViz, or run your `simple_moveit.py` scripts. They use the same MoveIt interface as in the simulation.
+Then plan and execute in RViz, or from your own MoveIt code. The interfaces are the same as in the simulation.
 
 | | Command |
 |---|---|
@@ -251,12 +269,6 @@ Then plan and execute in RViz, or run your `simple_moveit.py` scripts. They use 
 - Drive positions are logged to `~/.ros/lwa4p_trace_*.csv` for every trajectory, with a per-joint report on abort.
 
 </details>
-
----
-
-## 🧠 Isaac Sim / VLA training
-
-[`isaac/`](isaac/README.md) contains a plain URDF with **SCHUNK datasheet masses**, mesh-based inertias, real torque and speed limits, and a two-finger WSG 50. It also has an Isaac Lab `ArticulationCfg` template, the camera intrinsics, the reference scene, and the action/observation contract with the real robot.
 
 ---
 

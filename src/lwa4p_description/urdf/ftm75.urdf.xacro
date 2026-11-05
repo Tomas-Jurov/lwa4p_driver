@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!-- SCHUNK FTM 75 force-torque module (ID 31001023) between the arm flange and
+     the gripper. From the SCHUNK "Modular and Mobile Gripping Systems" catalogue
+     (FTM 75 drawing and technical data):
+       arm side: clamping ring Ø90 x 14.8 mm over the LWA's Ø65 flange
+       body Ø88, tool side: Ø65 spigot 10.1 mm (same flange as the arm's)
+       total length 62.75 mm, dead weight 0.7 kg
+       Fx, Fy, Fz +-300 N, Mx, My, Mz +-15 Nm, resolution 0.3 N / 0.01 Nm, 24 V, CAN
+
+     Frames (parent = arm_tool0 = top of the arm's flange spigot; the arm's
+     flange face is 10 mm below it, LWA 4P manual 3.1: 935 / 945 mm):
+       ftm_link           the sensor body
+       ftm_tool0          top of the FTM's own flange spigot = new tool flange,
+                          62.75 mm above the arm's flange face -> +52.75 mm
+       ftm_sensor_frame   measurement frame, z along the tool axis. Its exact
+                          origin is not in the catalogue - check the FTM manual
+                          and move it if needed. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="ftm75" params="parent">
+    <xacro:property name="face" value="-0.010"/>          <!-- arm flange face below arm_tool0 -->
+    <xacro:property name="ring_r" value="0.045"/>
+    <xacro:property name="ring_h" value="0.0148"/>
+    <xacro:property name="body_r" value="0.044"/>
+    <xacro:property name="spigot_r" value="0.0325"/>
+    <xacro:property name="spigot_h" value="0.0101"/>
+    <xacro:property name="total_h" value="0.06275"/>
+    <xacro:property name="body_h" value="${total_h - ring_h - spigot_h}"/>
+    <xacro:property name="ftm_mass" value="0.7"/>
+
+    <material name="ftm_silver"><color rgba="0.75 0.75 0.78 1.0"/></material>
+    <material name="ftm_black"><color rgba="0.15 0.15 0.15 1.0"/></material>
+
+    <joint name="ftm_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="ftm_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <xacro:macro name="ftm_cylinder" params="r h z0 material">
+      <visual>
+        <origin xyz="0 0 ${z0 + h / 2}"/>
+        <geometry><cylinder radius="${r}" length="${h}"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${z0 + h / 2}"/>
+        <geometry><cylinder radius="${r}" length="${h}"/></geometry>
+      </collision>
+    </xacro:macro>
+
+    <link name="ftm_link">
+      <xacro:ftm_cylinder r="${ring_r}" h="${ring_h}" z0="${face}" material="ftm_silver"/>
+      <xacro:ftm_cylinder r="${body_r}" h="${body_h}" z0="${face + ring_h}" material="ftm_black"/>
+      <xacro:ftm_cylinder r="${spigot_r}" h="${spigot_h}" z0="${face + ring_h + body_h}" material="ftm_silver"/>
+      <!-- 0.7 kg as a solid Ø88 x 62.75 mm cylinder (centre of the stack) -->
+      <inertial>
+        <origin xyz="0 0 ${face + total_h / 2}"/>
+        <mass value="${ftm_mass}"/>
+        <inertia ixx="${ftm_mass * (3 * body_r ** 2 + total_h ** 2) / 12}" ixy="0" ixz="0"
+                 iyy="${ftm_mass * (3 * body_r ** 2 + total_h ** 2) / 12}" iyz="0"
+                 izz="${ftm_mass * body_r ** 2 / 2}"/>
+      </inertial>
+    </link>
+
+    <joint name="ftm_sensor_joint" type="fixed">
+      <parent link="ftm_link"/>
+      <child link="ftm_sensor_frame"/>
+      <origin xyz="0 0 ${face + total_h / 2}" rpy="0 0 0"/>
+    </joint>
+    <link name="ftm_sensor_frame"/>
+
+    <joint name="ftm_tool0_joint" type="fixed">
+      <parent link="ftm_link"/>
+      <child link="ftm_tool0"/>
+      <origin xyz="0 0 ${face + total_h}" rpy="0 0 0"/>
+    </joint>
+    <link name="ftm_tool0"/>
+  </xacro:macro>
+</robot>

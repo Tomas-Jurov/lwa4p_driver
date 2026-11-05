@@ -141,7 +141,12 @@ def single_move(node, target_mdeg, vel_mdeg, tol_mdeg=100, timeout=6.0):
 
 
 def commutate(node, step_mdeg=500, vel_mdeg=2000):
+    # try the other direction too: a joint resting against an obstacle can
+    # only move away from it
     start = position(node)
-    ok = single_move(node, start + step_mdeg, vel_mdeg)
-    back = single_move(node, start, vel_mdeg)
-    return ok and back
+    for step in (step_mdeg, -step_mdeg):
+        ok = single_move(node, start + step, vel_mdeg)
+        back = single_move(node, start, vel_mdeg)
+        if ok and back:
+            return True
+    return False

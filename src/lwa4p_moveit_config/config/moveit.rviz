@@ -26,12 +26,50 @@ Visualization Manager:
       Scene Robot:
         Robot Alpha: 0.5
       Value: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Camera cloud
+      Topic:
+        Value: /camera/camera/depth/color/points
+        Reliability Policy: Best Effort
+        Depth: 5
+      Color Transformer: RGB8
+      Style: Points
+      Size (Pixels): 2
+      Decay Time: 0
+      Value: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Workspace scan
+      Topic:
+        Value: /workspace_scan
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        Depth: 1
+      Color Transformer: RGB8
+      Style: Points
+      Size (Pixels): 3
+      Decay Time: 0
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Click target
+      Topic:
+        Value: /click_to_move/target
+      Value: true
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Show Names: false
+      Marker Scale: 0.15
+      Enabled: false
+      Value: false
   Global Options:
     Fixed Frame: world
   Tools:
     - Class: rviz_default_plugins/Interact
     - Class: rviz_default_plugins/MoveCamera
     - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Value: /clicked_point
   Value: true
   Views:
     Current:

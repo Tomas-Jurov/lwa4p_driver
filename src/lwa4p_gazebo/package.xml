@@ -8,8 +8,15 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>lwa4p_description</exec_depend>
   <exec_depend>lwa4p_moveit_config</exec_depend>
-  <exec_depend>gazebo_ros</exec_depend>
-  <exec_depend>gazebo_ros2_control</exec_depend>
+  <!-- Humble: Gazebo Classic 11 -->
+  <exec_depend condition="$ROS_DISTRO == humble">gazebo_ros</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == humble">gazebo_ros2_control</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == humble">gazebo_msgs</exec_depend>
+  <!-- Jazzy and newer: Gazebo Harmonic -->
+  <exec_depend condition="$ROS_DISTRO != humble">ros_gz_sim</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != humble">ros_gz_bridge</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != humble">gz_ros2_control</exec_depend>
+  <exec_depend>tf2_msgs</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>

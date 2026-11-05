@@ -1,0 +1,20 @@
+# ROS 2 Jazzy + MoveIt 2 + Gazebo Harmonic for the LWA 4P workspace (Ubuntu 24.04).
+#   docker build -f docker/Dockerfile.jazzy -t lwa4p:jazzy .
+#   docker/run_jazzy.sh            # shell in the container, workspace built
+FROM osrf/ros:jazzy-desktop-full
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-jazzy-moveit \
+      ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-gripper-controllers \
+      ros-jazzy-gz-ros2-control ros-jazzy-ros-gz \
+      ros-jazzy-xacro ros-jazzy-joint-state-publisher \
+      python3-can python3-numpy python3-pip can-utils \
+    && pip3 install --break-system-packages canopen \
+    && rm -rf /var/lib/apt/lists/*
+
+# the workspace sources are mounted at /ws/src; build/install stay inside the container
+WORKDIR /ws
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc \
+ && echo "[ -f /ws/install/setup.bash ] && source /ws/install/setup.bash" >> /root/.bashrc \
+ && echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> /root/.bashrc

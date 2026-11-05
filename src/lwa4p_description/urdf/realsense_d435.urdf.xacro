@@ -6,7 +6,8 @@
        ${name}_color_optical_frame    z forward, x right, y down
        ${name}_depth_optical_frame    same pose (the sim depth is aligned to colour)
 
-     gazebo:=true adds a simulated RGB-D sensor (Gazebo Classic) publishing
+     gazebo:=true adds a simulated RGB-D sensor (Gazebo Classic; gazebo:=gz for
+     Gazebo Harmonic, bridged to the same topics) publishing
        /${name}/color/image_raw          /${name}/color/camera_info
        /${name}/depth/image_rect_raw     /${name}/depth/camera_info   (metres, aligned to colour)
        /${name}/depth/color/points       (sensor_msgs/PointCloud2, XYZRGB) -->
@@ -46,7 +47,8 @@
     </joint>
     <link name="${name}_depth_optical_frame"/>
 
-    <xacro:if value="${gazebo}">
+    <!-- gazebo: false | true (= Gazebo Classic, Humble) | gz (= Gazebo Harmonic, Jazzy) -->
+    <xacro:if value="${str(gazebo).lower() in ('true', 'classic')}">
       <gazebo reference="${name}_link">
         <material>Gazebo/Grey</material>
         <turnGravityOff>true</turnGravityOff>
@@ -86,6 +88,45 @@
             <min_depth>0.1</min_depth>
             <max_depth>6.0</max_depth>
           </plugin>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+
+    <!-- Gazebo Harmonic: rgbd_camera sensor. Its gz topics <name>/image,
+         <name>/depth_image, <name>/points, <name>/camera_info are bridged to the
+         RealSense-style ROS topics above by lwa4p_gazebo/config/gz_bridge.yaml -->
+    <xacro:if value="${str(gazebo).lower() == 'gz'}">
+      <gazebo reference="${name}_link">
+        <gravity>false</gravity>
+        <sensor name="${name}" type="rgbd_camera">
+          <always_on>true</always_on>
+          <update_rate>${rate}</update_rate>
+          <visualize>false</visualize>
+          <topic>${name}</topic>
+          <gz_frame_id>${name}_color_optical_frame</gz_frame_id>
+          <camera name="${name}">
+            <horizontal_fov>1.211</horizontal_fov>
+            <image>
+              <width>${width}</width>
+              <height>${height}</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>6.0</far>
+            </clip>
+            <depth_camera>
+              <clip>
+                <near>0.1</near>
+                <far>6.0</far>
+              </clip>
+            </depth_camera>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.002</stddev>
+            </noise>
+          </camera>
         </sensor>
       </gazebo>
     </xacro:if>

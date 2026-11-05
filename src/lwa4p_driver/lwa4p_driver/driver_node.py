@@ -19,6 +19,18 @@ from lwa4p_driver import ds402
 
 DEG = math.pi / 180.0
 
+# CiA 301 error codes (0x1003) seen on these ERB modules
+ERROR_TEXT = {
+    0x3222: "DC-link undervoltage - motor supply too weak / sagging",
+    0x7122: "commutation error - motor power dropped, redo enable",
+}
+
+
+def error_text(code):
+    if code is None:
+        return "no error code"
+    return f"error 0x{code:04X}" + (f" ({ERROR_TEXT[code]})" if code in ERROR_TEXT else "")
+
 
 class Trajectory:
 
@@ -64,6 +76,7 @@ class Lwa4pDriver(Node):
         self.max_vel = p("max_velocity_deg_s", 30.0).value * DEG
         self.accel_mdeg = p("acceleration_deg_s2", 60.0).value * 1000.0
         self.limit_margin = p("limit_margin_deg", 3.0).value * DEG
+        p("commutation_check", True)   # +-0.5 deg wiggle per joint on enable; read on each call
         self.start_tol = p("start_tolerance_deg", 2.0).value * DEG
         self.path_tol = p("path_tolerance_deg", 8.0).value * DEG
         self.goal_tol = p("goal_tolerance_deg", 0.5).value * DEG
@@ -167,8 +180,9 @@ class Lwa4pDriver(Node):
         if sw is not None:
             for i, s in enumerate(sw):
                 if ds402.is_fault(s) or not ds402.is_enabled(s):
+                    err = ds402.last_error(self.nodes[i]) if ds402.is_fault(s) else None
                     self.trip(f"joint {self.joint_names[i]} statusword 0x{s:04X}"
-                              f"{' FAULT' if ds402.is_fault(s) else ' not enabled'}")
+                              f"{' FAULT, ' + error_text(err) if ds402.is_fault(s) else ' not enabled'}")
                     return
         with self.state_lock:
             traj, t0 = self.traj, self.traj_t0
@@ -290,16 +304,18 @@ class Lwa4pDriver(Node):
         r = self.srv_reset(req, Trigger.Response())
         if not r.success:
             res.success, res.message = False, "not ready (motor power? E-stop?): " + r.message
+            self.get_logger().error(res.message)
             return res
         try:
             with self.can_lock:
                 for n in self.nodes:
                     ds402.setup_pp(n, self.accel_mdeg)
                 order = sorted(range(len(self.nodes)), key=lambda i: self.node_ids[i])
+                check = self.get_parameter("commutation_check").value
                 for i in order:
                     ds402.enable(self.nodes[i])
                     time.sleep(self.enable_settle)
-                    if not ds402.commutate(self.nodes[i]):
+                    if check and not ds402.commutate(self.nodes[i]):
                         raise RuntimeError(f"{self.joint_names[i]} did not move during the "
                                            f"commutation check (+0.5 deg and back)")
                     sw = ds402.statusword(self.nodes[i])
@@ -317,6 +333,7 @@ class Lwa4pDriver(Node):
                     ds402.disable(n)
                 self.enabled = False
             res.success, res.message = False, f"enable failed: {e}"
+            self.get_logger().error(res.message)
         return res
 
     def srv_disable(self, req, res):
