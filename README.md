@@ -88,10 +88,11 @@ Install [ROS 2 Humble desktop](https://docs.ros.org/en/humble/Installation/Ubunt
 
 ```bash
 sudo apt install \
-  ros-humble-moveit ros-humble-xacro \
+  ros-humble-moveit ros-humble-moveit-ros-perception ros-humble-xacro \
   ros-humble-gazebo-ros-pkgs ros-humble-gazebo-ros2-control \
   ros-humble-joint-state-broadcaster ros-humble-joint-trajectory-controller \
   ros-humble-forward-command-controller \
+  ros-humble-joint-state-publisher ros-humble-joint-state-publisher-gui \
   python3-colcon-common-extensions python3-rosdep
 ```
 </details>
@@ -103,9 +104,10 @@ Install [ROS 2 Jazzy desktop](https://docs.ros.org/en/jazzy/Installation/Ubuntu-
 
 ```bash
 sudo apt install \
-  ros-jazzy-moveit ros-jazzy-xacro \
+  ros-jazzy-moveit ros-jazzy-moveit-ros-perception ros-jazzy-xacro \
   ros-jazzy-ros-gz ros-jazzy-gz-ros2-control \
   ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-gripper-controllers \
+  ros-jazzy-joint-state-publisher ros-jazzy-joint-state-publisher-gui \
   python3-colcon-common-extensions python3-rosdep
 ```
 

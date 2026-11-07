@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-joint-trajectory-controller \
         ros-humble-forward-command-controller \
         ros-humble-moveit \
+        ros-humble-moveit-ros-perception \
         ros-humble-rmw-fastrtps-cpp \
         ros-humble-ros2-control \
         ros-humble-rviz2 \
