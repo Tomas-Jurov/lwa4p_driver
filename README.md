@@ -26,7 +26,7 @@
 | 🧭 **MoveIt 2** | Plan and execute from RViz or from Python; named poses `home`, `work1`, `work2`, `open`, `closed` |
 | 🌍 **Gazebo simulation** | Gazebo Classic (Humble) or Harmonic (Jazzy), same controller names as the real arm, physics-driven joints and working friction grasps |
 | 📷 **RealSense D435 on the wrist** | Hand–eye calibrated pose; RGB, aligned depth and a colored point cloud on RealSense-style topics, real and simulated |
-| 📏 **FTM 75 force-torque sensor** | Modelled between flange and gripper (geometry, mass, frames) |
+| 📏 **FTM 75 force-torque sensor** | Modelled between flange and gripper (geometry, mass, frames); driver on the AUX CAN publishes the raw channels |
 
 ## 🗺️ How it fits together
 
@@ -193,6 +193,12 @@ The world contains:
 
 🔄 **Reset the world:** Ctrl+C the launch and start it again.
 
+🏭 **Lab world (Jazzy / Gazebo Harmonic only):** the real workspace, with the table, T-profile frame, cap dispenser and tube racks at their measured positions. The blue caps and the plastic tubes are loose and can be grasped:
+
+```bash
+ros2 launch lwa4p_gazebo gazebo.launch.py world:=$(ros2 pkg prefix lwa4p_gazebo)/share/lwa4p_gazebo/worlds/lwa4p_lab_gz.sdf
+```
+
 ### 🔌 Interfaces (same as on the real robot)
 
 | | Name | Type |
@@ -257,6 +263,8 @@ Then plan and execute in RViz, or from your own MoveIt code. The interfaces are 
 |---|---|
 | 🔁 Move one joint out and back | `ros2 run lwa4p_driver test_move --joint 6 --deg 10 --time 5` |
 | ✊ Grasp a 15 mm part (35 N) | `ros2 run lwa4p_driver gripper_cmd grip 15 --force 35` |
+| 📏 Read the FTM 75 (raw channels, counts) | `ros2 topic echo /ftm/raw` |
+| 📏 Tare the FTM 75 | `ros2 service call /ftm/bias std_srvs/srv/Trigger` |
 | ✋ Open / gripper state | `ros2 run lwa4p_driver gripper_cmd open` · `... state` |
 | 🧯 Reset faults | `ros2 service call /lwa4p_driver/reset std_srvs/srv/Trigger` |
 | 🛑 Disable (brakes close) | `ros2 service call /lwa4p_driver/disable std_srvs/srv/Trigger` |

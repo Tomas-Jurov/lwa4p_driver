@@ -7,7 +7,8 @@ package_name = "lwa4p_driver"
 CONSOLE_SCRIPTS = ["driver = lwa4p_driver.driver_node:main",
                    "test_move = lwa4p_driver.test_move:main",
                    "gripper = lwa4p_driver.gripper_node:main",
-                   "gripper_cmd = lwa4p_driver.gripper_cmd:main"]
+                   "gripper_cmd = lwa4p_driver.gripper_cmd:main",
+                   "ftm = lwa4p_driver.ftm_node:main"]
 # local tools that are not part of the repository (see .gitignore): only
 # registered when the module exists
 for _tool in ("calibrate_hand_eye", "board_center_perpendicular", "hand_eye_to_urdf"):

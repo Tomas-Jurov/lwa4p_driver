@@ -1,0 +1,10 @@
+ftm:
+  ros__parameters:
+    can_channel: can1          # AUX CAN, shared with the WSG 50 gripper
+    can_id: 80                 # 0x50 request, answers on 0x51 / 0x52 (factory default)
+    rate_hz: 50.0              # the sensor answers up to 100 Hz; ~3 ms latency, ~5-10 % of requests unanswered
+    frame_id: ftm_sensor_frame
+    bias_samples: 50           # tare at start-up and on ~/bias
+    # Raw counts only: ~/raw and ~/magnitude are published, enough for contact detection.
+    # For calibrated forces add the sensor's 6x6 matrix as `calibration_matrix` (36 numbers, row-major,
+    # rows Fx Fy Fz Tx Ty Tz, N and Nm per count) and, for gravity compensation, `tool_mass` and `tool_com`.
