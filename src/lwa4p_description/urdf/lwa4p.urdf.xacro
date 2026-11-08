@@ -51,6 +51,7 @@
     <child link="arm_podest_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
+  <xacro:arg name="workspace_obstacles" default="true"/>
   <!-- measured with the calibrated wrist camera (2026-11-07): the real base
        column is r ~0.10 m from the mounting surface (z -0.110) up to z 0.017;
        the ipa320 mesh is only 5 cm tall, so a cylinder of the real size -->
@@ -60,10 +61,20 @@
       <geometry><cylinder radius="0.103" length="0.127"/></geometry>
       <material name="schunk_grey"/>
     </visual>
-    <collision>
-      <origin xyz="0 0 -0.0465" rpy="0 0 0"/>
-      <geometry><cylinder radius="0.105" length="0.127"/></geometry>
-    </collision>
+    <xacro:if value="$(arg workspace_obstacles)">
+      <collision>
+        <origin xyz="0 0 -0.0465" rpy="0 0 0"/>
+        <geometry><cylinder radius="0.105" length="0.127"/></geometry>
+      </collision>
+    </xacro:if>
+    <!-- simulation: the real column reaches below the simulated ground, and
+         Gazebo Classic throws the arm around when a fixed link penetrates it -->
+    <xacro:unless value="$(arg workspace_obstacles)">
+      <collision>
+        <origin xyz="0 0 0" rpy="0 ${pi} 0"/>
+        <geometry><mesh filename="${mesh}/arm_base_link.stl"/></geometry>
+      </collision>
+    </xacro:unless>
     <inertial>
       <mass value="2.0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
@@ -163,7 +174,6 @@
   <!-- fixed obstacles around the real robot (table, frame, dispenser, racks, ...).
        Part of the robot description, so RViz shows them and MoveIt plans around
        them. The Gazebo sim has its own world and switches them off. -->
-  <xacro:arg name="workspace_obstacles" default="true"/>
   <xacro:if value="$(arg workspace_obstacles)">
     <xacro:include filename="$(find lwa4p_description)/urdf/workspace_obstacles.urdf.xacro"/>
   </xacro:if>
