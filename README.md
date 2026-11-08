@@ -193,11 +193,14 @@ The world contains:
 
 🔄 **Reset the world:** Ctrl+C the launch and start it again.
 
-🏭 **Lab world (Jazzy / Gazebo Harmonic only):** the real workspace, with the table, T-profile frame, cap dispenser and tube racks at their measured positions. The blue caps and the plastic tubes are loose and can be grasped:
+🏭 **Lab world:** the real workspace, with the table, T-profile frame, cap dispenser and tube racks at their measured positions.
 
 ```bash
-ros2 launch lwa4p_gazebo gazebo.launch.py world:=$(ros2 pkg prefix lwa4p_gazebo)/share/lwa4p_gazebo/worlds/lwa4p_lab_gz.sdf
+ros2 launch lwa4p_gazebo gazebo.launch.py world:=$(ros2 pkg prefix lwa4p_gazebo)/share/lwa4p_gazebo/worlds/lwa4p_lab.world      # Humble
+ros2 launch lwa4p_gazebo gazebo.launch.py world:=$(ros2 pkg prefix lwa4p_gazebo)/share/lwa4p_gazebo/worlds/lwa4p_lab_gz.sdf     # Jazzy
 ```
+
+The blue caps and plastic tubes are loose bodies. Known limitation: a tube closed on by the gripper does not stay held yet in this world.
 
 ### 🔌 Interfaces (same as on the real robot)
 

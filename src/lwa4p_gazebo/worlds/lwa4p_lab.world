@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<!-- Gazebo Classic version of lwa4p_lab_gz.sdf (same models and poses): the real LWA 4P workspace,
+     measured 2026-11-07, same frame as workspace_obstacles.urdf.xacro (world = robot base axis). -->
+<sdf version="1.6">
+  <world name="lwa4p_lab">
+    <physics type="ode">
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>500</real_time_update_rate>
+    </physics>
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <gui><camera name="user_camera"><pose>1.3 -1.0 0.7 0 0.35 2.4</pose></camera></gui>
+    <model name="floor"><static>true</static><pose>0 0 -0.856 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry></collision>
+      <visual name='v'><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry><material><ambient>0.75 0.75 0.78 1.0</ambient><diffuse>0.75 0.75 0.78 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="table"><static>true</static><pose>0.35 0.33 -0.121 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>1.06 1.34 0.03</size></box></geometry><surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><box><size>1.06 1.34 0.03</size></box></geometry><material><ambient>0.85 0.85 0.87 1.0</ambient><diffuse>0.85 0.85 0.87 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="table_leg0"><static>true</static><pose>-0.15 -0.3 -0.486 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.05 0.05 0.74</size></box></geometry><material><ambient>0.6 0.6 0.62 1.0</ambient><diffuse>0.6 0.6 0.62 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="table_leg1"><static>true</static><pose>0.85 -0.3 -0.486 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.05 0.05 0.74</size></box></geometry><material><ambient>0.6 0.6 0.62 1.0</ambient><diffuse>0.6 0.6 0.62 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="table_leg2"><static>true</static><pose>-0.15 0.95 -0.486 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.05 0.05 0.74</size></box></geometry><material><ambient>0.6 0.6 0.62 1.0</ambient><diffuse>0.6 0.6 0.62 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="table_leg3"><static>true</static><pose>0.85 0.95 -0.486 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.05 0.05 0.74</size></box></geometry><material><ambient>0.6 0.6 0.62 1.0</ambient><diffuse>0.6 0.6 0.62 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="tprofile_top_bar"><static>true</static><pose>0.2075 -0.345 0.675 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.625 0.04 0.04</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.625 0.04 0.04</size></box></geometry><material><ambient>0.78 0.79 0.81 1.0</ambient><diffuse>0.78 0.79 0.81 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="tprofile_post_minus_x"><static>true</static><pose>-0.065 -0.345 0.2925 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.04 0.04 0.805</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.04 0.04 0.805</size></box></geometry><material><ambient>0.78 0.79 0.81 1.0</ambient><diffuse>0.78 0.79 0.81 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="tprofile_post_plus_x"><static>true</static><pose>0.47 -0.35 0.2925 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.04 0.04 0.805</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.04 0.04 0.805</size></box></geometry><material><ambient>0.78 0.79 0.81 1.0</ambient><diffuse>0.78 0.79 0.81 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="cap_dispenser_tube"><static>true</static><pose>0.333 -0.296 0.679 0 0 0</pose><link name="l">
+      <collision name='w0'><pose>0.01675 0.00000 0 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w0'><pose>0.01675 0.00000 0 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w1'><pose>0.01547 0.00641 0 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w1'><pose>0.01547 0.00641 0 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w2'><pose>0.01184 0.01184 0 0 0 2.35619</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w2'><pose>0.01184 0.01184 0 0 0 2.35619</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w3'><pose>0.00641 0.01547 0 0 0 2.74889</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w3'><pose>0.00641 0.01547 0 0 0 2.74889</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w4'><pose>0.00000 0.01675 0 0 0 3.14159</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w4'><pose>0.00000 0.01675 0 0 0 3.14159</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w5'><pose>-0.00641 0.01547 0 0 0 3.53429</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w5'><pose>-0.00641 0.01547 0 0 0 3.53429</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w6'><pose>-0.01184 0.01184 0 0 0 3.92699</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w6'><pose>-0.01184 0.01184 0 0 0 3.92699</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w7'><pose>-0.01547 0.00641 0 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w7'><pose>-0.01547 0.00641 0 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w8'><pose>-0.01675 0.00000 0 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w8'><pose>-0.01675 0.00000 0 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w9'><pose>-0.01547 -0.00641 0 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w9'><pose>-0.01547 -0.00641 0 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w10'><pose>-0.01184 -0.01184 0 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w10'><pose>-0.01184 -0.01184 0 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w11'><pose>-0.00641 -0.01547 0 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w11'><pose>-0.00641 -0.01547 0 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w12'><pose>-0.00000 -0.01675 0 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w12'><pose>-0.00000 -0.01675 0 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w13'><pose>0.00641 -0.01547 0 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w13'><pose>0.00641 -0.01547 0 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w14'><pose>0.01184 -0.01184 0 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w14'><pose>0.01184 -0.01184 0 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='w15'><pose>0.01547 -0.00641 0 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
+      <visual name='w15'><pose>0.01547 -0.00641 0 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l0'><pose>0.01675 0.00000 -0.09950 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l0'><pose>0.01675 0.00000 -0.09950 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l1'><pose>0.01547 0.00641 -0.09950 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l1'><pose>0.01547 0.00641 -0.09950 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l7'><pose>-0.01547 0.00641 -0.09950 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l7'><pose>-0.01547 0.00641 -0.09950 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l8'><pose>-0.01675 0.00000 -0.09950 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l8'><pose>-0.01675 0.00000 -0.09950 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l9'><pose>-0.01547 -0.00641 -0.09950 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l9'><pose>-0.01547 -0.00641 -0.09950 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l10'><pose>-0.01184 -0.01184 -0.09950 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l10'><pose>-0.01184 -0.01184 -0.09950 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l11'><pose>-0.00641 -0.01547 -0.09950 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l11'><pose>-0.00641 -0.01547 -0.09950 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l12'><pose>-0.00000 -0.01675 -0.09950 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l12'><pose>-0.00000 -0.01675 -0.09950 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l13'><pose>0.00641 -0.01547 -0.09950 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l13'><pose>0.00641 -0.01547 -0.09950 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l14'><pose>0.01184 -0.01184 -0.09950 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l14'><pose>0.01184 -0.01184 -0.09950 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l15'><pose>0.01547 -0.00641 -0.09950 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l15'><pose>0.01547 -0.00641 -0.09950 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+    </link></model>
+    <model name="cap_dispenser_bracket"><static>true</static><pose>0.333 -0.318 0.6245 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.05 0.010 0.145</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.05 0.010 0.145</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="cap_dispenser_clamp"><static>true</static><pose>0.333 -0.321 0.701 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.09 0.092 0.008</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.09 0.092 0.008</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="cap_dispenser_stop"><static>true</static><pose>0.333 -0.296 0.5555 0 0 0.0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.034 0.034 0.007</size></box></geometry></collision>
+      <visual name='v'><geometry><box><size>0.034 0.034 0.007</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="blue_cap_1"><pose>0.333 -0.296 0.5695 0 0 0</pose><link name="l">
+      <inertial><mass>0.004</mass><inertia><ixx>1.1e-6</ixx><iyy>1.1e-6</iyy><izz>1.0e-6</izz></inertia></inertial>
+      <collision name='c'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry>
+        <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="blue_cap_2"><pose>0.333 -0.296 0.5900 0 0 0</pose><link name="l">
+      <inertial><mass>0.004</mass><inertia><ixx>1.1e-6</ixx><iyy>1.1e-6</iyy><izz>1.0e-6</izz></inertia></inertial>
+      <collision name='c'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry>
+        <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="blue_cap_3"><pose>0.333 -0.296 0.6105 0 0 0</pose><link name="l">
+      <inertial><mass>0.004</mass><inertia><ixx>1.1e-6</ixx><iyy>1.1e-6</iyy><izz>1.0e-6</izz></inertia></inertial>
+      <collision name='c'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry>
+        <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="blue_cap_4"><pose>0.333 -0.296 0.6310 0 0 0</pose><link name="l">
+      <inertial><mass>0.004</mass><inertia><ixx>1.1e-6</ixx><iyy>1.1e-6</iyy><izz>1.0e-6</izz></inertia></inertial>
+      <collision name='c'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry>
+        <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="blue_cap_5"><pose>0.333 -0.296 0.6515 0 0 0</pose><link name="l">
+      <inertial><mass>0.004</mass><inertia><ixx>1.1e-6</ixx><iyy>1.1e-6</iyy><izz>1.0e-6</izz></inertia></inertial>
+      <collision name='c'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry>
+        <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name='v'><geometry><cylinder><radius>0.015</radius><length>0.020</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="tube_racks"><static>true</static><link name="l">
+      <collision name='c'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/tube_racks.stl</uri></mesh></geometry><surface><contact><collide_bitmask>1</collide_bitmask></contact></surface></collision>
+      <visual name='v'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/tube_racks.stl</uri></mesh></geometry><material><ambient>0.55 0.55 0.58 1.0</ambient><diffuse>0.55 0.55 0.58 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_1"><static>true</static><pose>0.269 -0.013 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_1"><pose>0.269 -0.013 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_2"><static>true</static><pose>0.274 0.034 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_2"><pose>0.274 0.034 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_3"><static>true</static><pose>0.315 -0.064 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_3"><pose>0.315 -0.064 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_4"><static>true</static><pose>0.39 -0.025 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_4"><pose>0.39 -0.025 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_5"><static>true</static><pose>0.444 -0.065 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_5"><pose>0.444 -0.065 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_6"><static>true</static><pose>0.44 -0.017 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_6"><pose>0.44 -0.017 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_7"><static>true</static><pose>0.444 0.032 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_7"><pose>0.444 0.032 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="rack_support_8"><static>true</static><pose>0.487 -0.067 -0.0245 0 0 0</pose><link name="l">
+      <collision name='c'><geometry><box><size>0.030 0.030 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision></link></model>
+    <model name="rack_tube_8"><pose>0.487 -0.067 0 0 0 0</pose><link name="l">
+      <inertial><pose>0 0 0.0263 0 0 0</pose><mass>0.05</mass><inertia><ixx>3.8e-5</ixx><iyy>3.8e-5</iyy><izz>3.9e-6</izz></inertia></inertial>
+      <collision name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='body'><pose>0 0 0.0263 0 0 0</pose><geometry><cylinder><radius>0.01225</radius><length>0.0905</length></cylinder></geometry><material><ambient>0.85 0.92 0.95 0.35</ambient><diffuse>0.85 0.92 0.95 0.35</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry>
+        <surface><friction><ode><mu>2.0</mu><mu2>2.0</mu2></ode></friction><contact><collide_bitmask>2</collide_bitmask><ode><kp>1e6</kp><kd>100</kd><min_depth>0.0</min_depth><max_vel>0</max_vel></ode></contact></surface></collision>
+      <visual name='cap'><pose>0 0 0.0648 0 0 0</pose><geometry><cylinder><radius>0.0155</radius><length>0.0185</length></cylinder></geometry><material><ambient>0.10 0.45 0.85 1.0</ambient><diffuse>0.10 0.45 0.85 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="holder_base"><static>true</static><link name="l">
+      <collision name='c'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/holder_base.stl</uri></mesh></geometry><surface><contact><collide_bitmask>1</collide_bitmask></contact></surface></collision>
+      <visual name='v'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/holder_base.stl</uri></mesh></geometry><material><ambient>0.72 0.55 0.35 1.0</ambient><diffuse>0.72 0.55 0.35 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="holder_top"><static>true</static><link name="l">
+      <collision name='c'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/holder_top.stl</uri></mesh></geometry><surface><contact><collide_bitmask>1</collide_bitmask></contact></surface></collision>
+      <visual name='v'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/holder_top.stl</uri></mesh></geometry><material><ambient>0.62 0.62 0.65 1.0</ambient><diffuse>0.62 0.62 0.65 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="low_layer"><static>true</static><link name="l">
+      
+      <visual name='v'><geometry><mesh><uri>model://lwa4p_description/meshes/workspace/low_layer.stl</uri></mesh></geometry><material><ambient>0.70 0.52 0.33 1.0</ambient><diffuse>0.70 0.52 0.33 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual></link></model>
+    <model name="holder_guide"><static>true</static><pose>0.18 0.339 0 0 0 0</pose><link name="l">
+      <collision name='floor'><pose>0 0 -0.0600 0 0 0</pose><geometry><box><size>0.05 0.05 0.010</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision>
+      <collision name='wx0'><pose>0.020999999999999998 0 -0.0055 0 0 0</pose><geometry><box><size>0.004 0.046 0.0990</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision><collision name='wx1'><pose>-0.020999999999999998 0 -0.0055 0 0 0</pose><geometry><box><size>0.004 0.046 0.0990</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision><collision name='wy0'><pose>0 0.020999999999999998 -0.0055 0 0 0</pose><geometry><box><size>0.046 0.004 0.0990</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision><collision name='wy1'><pose>0 -0.020999999999999998 -0.0055 0 0 0</pose><geometry><box><size>0.046 0.004 0.0990</size></box></geometry><surface><contact><collide_bitmask>2</collide_bitmask></contact></surface></collision>
+    </link></model>
+  </world>
+</sdf>

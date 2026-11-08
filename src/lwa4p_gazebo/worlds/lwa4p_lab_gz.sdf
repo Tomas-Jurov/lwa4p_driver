@@ -88,6 +88,28 @@
       <visual name='w14'><pose>0.01184 -0.01184 0 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
       <collision name='w15'><pose>0.01547 -0.00641 0 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry></collision>
       <visual name='w15'><pose>0.01547 -0.00641 0 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.144</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l0'><pose>0.01675 0.00000 -0.09950 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l0'><pose>0.01675 0.00000 -0.09950 0 0 1.57080</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l1'><pose>0.01547 0.00641 -0.09950 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l1'><pose>0.01547 0.00641 -0.09950 0 0 1.96350</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l7'><pose>-0.01547 0.00641 -0.09950 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l7'><pose>-0.01547 0.00641 -0.09950 0 0 4.31969</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l8'><pose>-0.01675 0.00000 -0.09950 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l8'><pose>-0.01675 0.00000 -0.09950 0 0 4.71239</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l9'><pose>-0.01547 -0.00641 -0.09950 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l9'><pose>-0.01547 -0.00641 -0.09950 0 0 5.10509</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l10'><pose>-0.01184 -0.01184 -0.09950 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l10'><pose>-0.01184 -0.01184 -0.09950 0 0 5.49779</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l11'><pose>-0.00641 -0.01547 -0.09950 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l11'><pose>-0.00641 -0.01547 -0.09950 0 0 5.89049</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l12'><pose>-0.00000 -0.01675 -0.09950 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l12'><pose>-0.00000 -0.01675 -0.09950 0 0 6.28319</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l13'><pose>0.00641 -0.01547 -0.09950 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l13'><pose>0.00641 -0.01547 -0.09950 0 0 6.67588</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l14'><pose>0.01184 -0.01184 -0.09950 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l14'><pose>0.01184 -0.01184 -0.09950 0 0 7.06858</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+      <collision name='l15'><pose>0.01547 -0.00641 -0.09950 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry></collision>
+      <visual name='l15'><pose>0.01547 -0.00641 -0.09950 0 0 7.46128</pose><geometry><box><size>0.00866 0.0015 0.0550</size></box></geometry><material><ambient>0.08 0.08 0.08 1.0</ambient><diffuse>0.08 0.08 0.08 1.0</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
     </link></model>
     <model name="cap_dispenser_bracket"><static>true</static><pose>0.333 -0.318 0.6245 0 0 0.0</pose><link name="l">
       <collision name='c'><geometry><box><size>0.05 0.010 0.145</size></box></geometry></collision>
