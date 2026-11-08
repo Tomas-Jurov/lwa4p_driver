@@ -7,6 +7,8 @@
   <!-- the robot description's wrist camera is only a collision box; the sim adds
        the full simulated RealSense below, at the same calibrated pose -->
   <xacro:arg name="wrist_camera" default="false"/>
+  <!-- the lab's fixed obstacles are not in the simulated world -->
+  <xacro:arg name="workspace_obstacles" default="false"/>
   <xacro:include filename="$(find lwa4p_description)/urdf/lwa4p.urdf.xacro"/>
   <xacro:include filename="$(find lwa4p_description)/urdf/realsense_d435.urdf.xacro"/>
 

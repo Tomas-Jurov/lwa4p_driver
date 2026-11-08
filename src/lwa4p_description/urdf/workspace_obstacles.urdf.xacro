@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!-- Fixed obstacles around the real LWA 4P, so MoveIt never plans into them.
+     Included from lwa4p.urdf.xacro (arg workspace_obstacles, off in Gazebo):
+     RViz shows them and every planner, Plan & Execute and collision check
+     avoids them, nothing has to be started.
+
+     Digital twin of the workspace, scanned on 2026-11-07 with the hand-eye
+     calibrated wrist camera (3.4 mm RMS): ~2700 depth frames from top-down
+     and all-round views, depth scale corrected (+3.25 %, checked against the
+     ChArUco board), statistical + radius outlier removal, RANSAC table plane,
+     DBSCAN clusters, oriented boxes = measured extent + 10 mm.
+     Frame: world (= robot base axis), metres; yaw about z in rad.
+     If something on the table is moved, update its box here. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="obstacle" params="name xyz size yaw:=0">
+    <link name="${name}">
+      <visual>
+        <geometry><box size="${size}"/></geometry>
+        <material name="obstacle_grey"><color rgba="0.6 0.6 0.6 0.5"/></material>
+      </visual>
+      <collision>
+        <geometry><box size="${size}"/></geometry>
+      </collision>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="world"/>
+      <child link="${name}"/>
+      <origin xyz="${xyz}" rpy="0 0 ${yaw}"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- a measured shape (STL in world coordinates, already grown by its margin) -->
+  <xacro:macro name="obstacle_mesh" params="name">
+    <link name="${name}">
+      <visual>
+        <geometry><mesh filename="package://lwa4p_description/meshes/workspace/${name[9:]}.stl"/></geometry>
+        <material name="obstacle_grey"/>
+      </visual>
+      <collision>
+        <geometry><mesh filename="package://lwa4p_description/meshes/workspace/${name[9:]}.stl"/></geometry>
+      </collision>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="world"/>
+      <child link="${name}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- table top: RANSAC plane of the close scan at z -0.1062 (tilt 0.19 deg, 2.9 mm RMS;
+       the LWA 4P manual's mounting surface is at -0.106), box top 2 mm above it -->
+  <xacro:obstacle name="obstacle_table" xyz="0.35 0.33 -0.119" size="1.06 1.34 0.03"/>
+
+  <!-- T-profile gantry frame (40 x 40 mm grey profiles) behind the robot, measured on
+       2026-11-07 by multi-view space carving (5 depth views, 1 cm voxels):
+       top bar front face y -0.325, z 0.655..0.695; +x post x 0.445..0.495,
+       y -0.375..-0.325; -x post x -0.08..-0.05. Boxes: 40 mm profile + 2 mm. -->
+  <xacro:obstacle name="obstacle_tprofile_top_bar" xyz="0.2075 -0.345 0.675" size="0.625 0.044 0.044"/>
+  <xacro:obstacle name="obstacle_tprofile_post_minus_x" xyz="-0.065 -0.345 0.2925" size="0.044 0.044 0.805"/>
+  <xacro:obstacle name="obstacle_tprofile_post_plus_x" xyz="0.47 -0.35 0.2925" size="0.044 0.044 0.805"/>
+
+  <!-- cap dispenser: black tube in front of the top bar, held by a black back plate
+       and a clamp plate lying on the bar. Axis x 0.333, y -0.296 from the blue caps
+       inside (camera, two views within 9 mm). Measured with the gripper (2026-11-07,
+       tool length corrected by the FTM table touch): closing on the tube from +y gives
+       34 mm from z 0.607 up (33.3 mm at the cap slot), a cap (20 mm) at z 0.58, nothing
+       at 0.56; top z 0.751 from the camera silhouette, confirmed by photos.
+       Tube = cylinder r 17 + 2 mm from z 0.607; below it the front (+y side) is left
+       free so a cap can be taken out: TCP about 0.333 -0.306 0.58, gripper
+       horizontal, approach -y, close at 20 N, pull out +y. -->
+  <link name="obstacle_cap_dispenser">
+    <visual>
+      <geometry><cylinder radius="0.019" length="0.144"/></geometry>
+      <material name="obstacle_grey"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.019" length="0.144"/></geometry>
+    </collision>
+  </link>
+  <joint name="obstacle_cap_dispenser_joint" type="fixed">
+    <parent link="world"/>
+    <child link="obstacle_cap_dispenser"/>
+    <origin xyz="0.333 -0.296 0.679" rpy="0 0 0"/>
+  </joint>
+  <!-- back plate behind the tube (full tube height down to the cap slot) and the
+       clamp plate on top of the bar -->
+  <xacro:obstacle name="obstacle_cap_dispenser_bracket" xyz="0.333 -0.318 0.6245" size="0.05 0.010 0.145"/>
+  <xacro:obstacle name="obstacle_cap_dispenser_clamp" xyz="0.333 -0.321 0.701" size="0.09 0.092 0.008"/>
+
+  <!-- tube stands, convex hulls of the close scan (2026-11-07, ~30 cm camera distance,
+       depth corrected) grown by 5 mm. Racks only up to just above the rack plate
+       (plate 123 mm above the table, caps up to 160 mm) so the gripper can reach
+       the caps; the holder as a wide wooden base plus its slim top frame on rods. -->
+  <xacro:obstacle_mesh name="obstacle_tube_racks"/>
+  <xacro:obstacle_mesh name="obstacle_holder_base"/>
+  <xacro:obstacle_mesh name="obstacle_holder_top"/>
+  <!-- the wooden plank under the racks and other low parts (8..26 mm), 2 cm cells -->
+  <xacro:obstacle_mesh name="obstacle_low_layer"/>
+
+</robot>

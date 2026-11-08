@@ -280,6 +280,8 @@ Then plan and execute in RViz, or from your own MoveIt code. The interfaces are 
 |---|---|
 | ⏳ `waiting for move_group ...` forever | That terminal uses another RMW: `export RMW_IMPLEMENTATION=rmw_fastrtps_cpp` |
 | 📷 `no point cloud` | The laptop is overloaded: use `gui:=false` and close the browser |
+| 🛑 Real robot: Plan & Execute does nothing, `Goal was rejected by server` / `CONTROL_FAILED` | The drives are disabled. Enable them (also after every E-stop or fault): `ros2 service call /lwa4p_driver/enable std_srvs/srv/Trigger '{}'` |
+| ✋ Real robot: gripper command times out, the fingers don't move | The gripper node is not running or not homed. Check its output in the launch terminal (WSG on `can1`, `python3-can` and `canopen` installed), then `ros2 run lwa4p_driver gripper_cmd home` |
 | ❌ `INVALID_MOTION_PLAN` / `NO_IK_SOLUTION` | The target is out of reach (about 0.55 m from the base at table height, pointing down) or blocked by an obstacle |
 | 🔌 `can0 is missing or DOWN` | Replug the PCAN adapter, check the udev rule, or run `sudo ip link set can0 up type can bitrate 500000` |
 | ⚡ Joints fault with `0x3222` | Motor supply too weak for the move: slow down, then reset and enable |

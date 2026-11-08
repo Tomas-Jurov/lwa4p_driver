@@ -51,15 +51,18 @@
     <child link="arm_podest_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
+  <!-- measured with the calibrated wrist camera (2026-11-07): the real base
+       column is r ~0.10 m from the mounting surface (z -0.110) up to z 0.017;
+       the ipa320 mesh is only 5 cm tall, so a cylinder of the real size -->
   <link name="arm_podest_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 ${pi} 0"/>
-      <geometry><mesh filename="${mesh}/arm_base_link.stl"/></geometry>
+      <origin xyz="0 0 -0.0465" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.103" length="0.127"/></geometry>
       <material name="schunk_grey"/>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 ${pi} 0"/>
-      <geometry><mesh filename="${mesh}/arm_base_link.stl"/></geometry>
+      <origin xyz="0 0 -0.0465" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.105" length="0.127"/></geometry>
     </collision>
     <inertial>
       <mass value="2.0"/>
@@ -128,6 +131,12 @@
          x = optical axis, y = along the body. Generous because the extrinsic is
          only good to ~1 cm and the bracket screw once jammed against arm_4. -->
     <link name="camera_link">
+      <!-- visual = the collision box, so RViz shows what MoveIt keeps clear -->
+      <visual>
+        <origin xyz="-0.02 0 0" rpy="0 0 0"/>
+        <geometry><box size="0.06 0.13 0.05"/></geometry>
+        <material name="schunk_grey"/>
+      </visual>
       <collision>
         <origin xyz="-0.02 0 0" rpy="0 0 0"/>
         <geometry><box size="0.06 0.13 0.05"/></geometry>
@@ -149,5 +158,13 @@
   <xacro:if value="$(arg gripper)">
     <xacro:include filename="$(find lwa4p_description)/urdf/wsg50.urdf.xacro"/>
     <xacro:wsg50 parent="${'ftm_tool0' if '$(arg ftm)' == 'true' else 'arm_tool0'}" yaw="$(arg gripper_yaw)"/>
+  </xacro:if>
+
+  <!-- fixed obstacles around the real robot (table, frame, dispenser, racks, ...).
+       Part of the robot description, so RViz shows them and MoveIt plans around
+       them. The Gazebo sim has its own world and switches them off. -->
+  <xacro:arg name="workspace_obstacles" default="true"/>
+  <xacro:if value="$(arg workspace_obstacles)">
+    <xacro:include filename="$(find lwa4p_description)/urdf/workspace_obstacles.urdf.xacro"/>
   </xacro:if>
 </robot>

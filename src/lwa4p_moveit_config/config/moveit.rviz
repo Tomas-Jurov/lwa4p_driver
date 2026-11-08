@@ -50,6 +50,16 @@ Visualization Manager:
       Decay Time: 0
       Value: true
     - Class: rviz_default_plugins/MarkerArray
+      Name: Workspace map (voxels)
+      Namespaces:
+        {}
+      Topic:
+        Value: /workspace_voxels
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        Depth: 1
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
       Name: Click target
       Topic:
         Value: /click_to_move/target

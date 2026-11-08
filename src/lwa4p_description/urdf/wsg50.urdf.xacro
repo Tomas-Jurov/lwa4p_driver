@@ -8,11 +8,16 @@
        Weight 1.15 kg, 5..80 N, 5..420 mm/s.
      Measured on the real gripper: the mounted fingers reach 9.75 mm further
        inwards than each jaw (fingertip gap = jaw width - 19.5 mm).
+     Tool length measured on the real arm (2026-11-07): gripper pointing down,
+       fingers closed, lowered in 1 mm steps onto the table (z -0.1062 from the
+       calibrated camera scan) until the FTM 75 saw contact. The fingertips touched
+       at gripper_tcp z -0.1015, i.e. 10 mm closer to the flange than the earlier
+       model (fingertips 162 mm above the housing bottom) -> now 152 mm, +-3 mm.
+       Confirmed by hand: the fingers are ~79 mm long and bolted to the side of
+       the 24 mm base jaws -> 55 mm above the jaw top (finger_l 55.5 mm).
      NOT measured yet (change when you know them):
-       adapter_h (flange -> housing bottom), jaw_d (jaw depth in y),
-       finger_t / finger_w / finger_l (finger thickness, width, length above
-       the jaw). finger_l is chosen so the fingertips are 162 mm above the
-       housing bottom, as in the earlier model (keeps gripper_tcp unchanged).
+       adapter_h (flange -> housing bottom; consistent with the touch, so 20 mm
+       looks right), jaw_d (jaw depth in y), finger_t / finger_w.
 
      gripper_joint = fingertip GAP in metres (same number the gripper node,
      MoveIt and `arm_cmd.sh grip` use). Each finger mimics half of it. -->
@@ -28,7 +33,7 @@
     <xacro:property name="jaw_inset" value="0.00975"/>
     <xacro:property name="finger_t" value="0.020"/>
     <xacro:property name="finger_w" value="0.030"/>
-    <xacro:property name="finger_l" value="0.0655"/>
+    <xacro:property name="finger_l" value="0.0555"/>
     <xacro:property name="gap_max" value="0.0895"/>
 
     <material name="wsg_grey"><color rgba="0.6 0.6 0.62 1.0"/></material>

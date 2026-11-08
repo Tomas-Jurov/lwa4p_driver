@@ -1,3 +1,10 @@
+# gz_ros2_control follows position commands with a P controller on the joint
+# velocity; its default gain 0.1 makes the arm and gripper crawl (MoveIt then
+# times out). Higher values make the light fingers jitter; 3 is a good balance.
+gz_ros_control:              # node name of the gz_ros2_control plugin
+  ros__parameters:
+    position_proportional_gain: 3.0
+
 controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
@@ -16,12 +23,28 @@ arm_controller:
     joints: [arm_1_joint, arm_2_joint, arm_3_joint, arm_4_joint, arm_5_joint, arm_6_joint]
     command_interfaces: [position]
     state_interfaces: [position, velocity]
+    # report success only once the simulated joints have caught up (they
+    # trail the command slightly), so the next plan starts from where the
+    # arm really is
+    constraints:
+      stopped_velocity_tolerance: 0.02
+      goal_time: 5.0
+      arm_1_joint: {goal: 0.01}
+      arm_2_joint: {goal: 0.01}
+      arm_3_joint: {goal: 0.01}
+      arm_4_joint: {goal: 0.01}
+      arm_5_joint: {goal: 0.01}
+      arm_6_joint: {goal: 0.01}
 
 gripper_controller:
   ros__parameters:
     joints: [gripper_joint]
     command_interfaces: [position]
     state_interfaces: [position, velocity]
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 5.0
+      gripper_joint: {goal: 0.002}
 
 finger_controller:
   ros__parameters:

@@ -25,7 +25,10 @@ moveit_simple_controller_manager:
       - gripper_joint
     command_joint: gripper_joint
     max_effort: 35.0
-    allow_failure: false
+    # a closing gripper often does not end at the commanded width: it stops on
+    # the object, or closes further when there is nothing to grasp (the WSG
+    # then reports NO PART FOUND). Don't let that fail the whole MoveIt plan.
+    allow_failure: true
 
 trajectory_execution:
   allowed_execution_duration_scaling: 1.5
