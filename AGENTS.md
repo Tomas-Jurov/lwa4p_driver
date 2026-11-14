@@ -164,8 +164,9 @@ Everything above the action level must work unchanged on every backend:
 - **The driver rejects a trajectory** if a segment exceeds 1.05 × its speed limit, a point is within 3° of a drive limit, the first point is more than 2° from the current position, or the drives are not enabled.
   It aborts on a tracking error above 8°.
   Plan within these limits in simulation too: the simulators accept what the robot rejects.
-- **No streaming input:** the driver samples each trajectory at 20 Hz and sends Profile Position targets.
-  MoveIt Servo, velocity control and high-rate policies do not work on the real arm.
+- **No streaming input in Tomas's current public driver:** it samples each trajectory at 20 Hz and sends Profile Position targets.
+  MoveIt Servo, velocity control and high-rate policies therefore do not work on the real arm with this driver.
+  This is a limit of the current driver, not of the hardware; a streaming or admittance input is an open question with Tomas.
 - **CAN:** the arm is on `can0` (nodes 3–8).
   The WSG 50 (`gripper_node`) and the FTM 75 (`ftm_node`) share `can1` in separate processes.
   Processes may share a bus only with unique CAN IDs and with each process filtering its own IDs.
@@ -194,19 +195,26 @@ Everything above the action level must work unchanged on every backend:
 
 ## 10. Architecture and design rules
 
+- Interface decisions and open questions: [docs/manipulation_interface_consolidation.md](docs/manipulation_interface_consolidation.md).
+  Follow its `Agreed` items; do not implement `Open` items without a recorded decision.
+- Application architecture: Dmitrii's architecture sketch, with its busy worker policy (not published in this repository).
+  Ask Dmitrii before designing the command/runner layer, admission or worker behaviour.
 - Diagram: [docs/manipulation_architecture.txt](docs/manipulation_architecture.txt).
 - Proposed implementation (Viktor Budylin): [docs/manipulation_implementation_proposal.md](docs/manipulation_implementation_proposal.md).
   It is a snapshot from the archived `manipulation-Simulation@478a2ec`; its file paths refer to that repository.
-  Where it and this file differ, ask.
+  Where it and the consolidation differ, the consolidation wins.
 - How the first diagram compares with the real hardware: [docs/architecture_review.md](docs/architecture_review.md).
-- The action interface is not frozen yet.
-  The 02.11 meeting is the baseline; skill names still clash with the AI team's (`release` means "open at a force threshold" for us and "put down" for them).
 
 **Decisions:**
 
-- The real robot keeps Tomas's Python CAN driver.
+- v1 exposes exactly three actions: `GoToPosition`, `Grip`, `Release`, with force behaviour from v1.
+  There are no `Pick` or `Place` actions; the AI team composes them from the three.
+- `GoToPosition` receives TCP-pose candidates and selects the best feasible plan found within one shared search-time budget.
+- One worker serves all three actions, without a queue.
+  A request that arrives while it is busy is accepted and immediately aborted with outcome `BUSY`; it never runs.
+- The real robot runs Tomas's driver.
+  We do not write a parallel driver (a `ros2_control` hardware interface, `ros2_canopen`) in `devel`; new driver capabilities are requested from Tomas through workflow 3.
   `ros2_control` exists only in simulation.
-  Do not propose a `ros2_control` hardware interface or `ros2_canopen`.
 - Navigation and perception belong to other teams; this repository consumes their poses and TF.
 - BehaviorTree.CPP and the BT XML belong to the AI team.
   This team provides the ROS 2 actions and the failure enumeration.
@@ -218,14 +226,15 @@ Everything above the action level must work unchanged on every backend:
 
 1. Skills talk to MoveIt, MTC, `/joint_states`, TF and the gripper abstraction.
    They never call `controller_manager` services or require simulator services.
-2. MTC owns the motion sequence (approach, grasp, lift, place) and backtracks over IK and grasp candidates.
-   The skill server verifies the grasp.
-   The BT works at skill level and does not duplicate motion stages.
+2. MTC plans only inside `GoToPosition`.
+   The server adds no implicit pick or place sequences; `Grip` reports grasp evidence and the server monitors holding.
+   Keep the application layer free of ROS, with ROS, MoveIt and MTC behind adapters.
 3. Skills are ROS 2 actions with interfaces in a dedicated `*_interfaces` package.
-   Every goal ends with a result carrying a failure code, so never reject a goal in the goal callback.
+   Every accepted goal ends with a result carrying an outcome code.
    Convert low-level errors to the enumeration in one place.
-4. Perception results become MoveIt collision objects.
-   The skill server owns their lifecycle (add, attach, detach, remove).
+4. Ownership of the planning scene is open (decision D06 in the consolidation).
+   Do not make the skill server the owner of world objects; a separate environment component may manage them later.
+   Attaching and detaching the held object belongs to the server.
 5. Manipulation plans in `world`, the arm base.
    On the mobile robot, `world` hangs off the base TF tree and the base stays still during execution.
 6. MTC needs `ExecuteTaskSolutionCapability` in `move_group`.
@@ -233,4 +242,4 @@ Everything above the action level must work unchanged on every backend:
 7. For straight moves, use MTC `CartesianPath`, not Pilz LIN; keep KDL as the IK solver (see `docs/architecture_review.md`).
 8. Check that a dependency has a Jazzy binary before adding it.
 
-Planned packages: `manipulation_interfaces` (actions, failure enumeration), `manipulation_skills` (skill server and MTC tasks, C++), `manipulation_sim` (simulation gripper adapter), `lwa4p_bringup` (launch files and robot configuration).
+Planned packages (names not final): `manipulation_interfaces` (actions, failure enumeration), `manipulation_skill_server` (skill server and MTC, C++), `manipulation_sim` (simulation gripper adapter), `lwa4p_bringup` (launch files and robot configuration).
