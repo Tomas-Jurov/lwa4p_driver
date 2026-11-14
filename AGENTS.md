@@ -70,7 +70,10 @@ CI exists to catch exactly that.
 1. **Tomas's files are untouched.**
    Against `git merge-base origin/main HEAD` (the last `main` merged into `devel`), the merge result may only add files.
    Comparing with the current `main` instead would fail every pull request between "Sync fork" and the `main → devel` merge.
-2. **The workspace builds** on Jazzy.
+   Run the same check locally before you push: `.github/scripts/check_main_files_untouched.sh`.
+2. **The workspace builds and our tests pass** on Jazzy (`ros:jazzy-ros-base`).
+   Tomas's packages are built but not tested.
+   Declare every build and test dependency of our packages in `package.xml`: CI installs only those through `rosdep`.
 3. **The model contract holds** (added together with `isaac_sim/`): the joint names, frames and controller names our code relies on still exist in Tomas's model.
    If Tomas renames one, the `main → devel` pull request fails with a clear message.
 
