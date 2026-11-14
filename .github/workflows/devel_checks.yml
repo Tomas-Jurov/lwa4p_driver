@@ -59,6 +59,9 @@ jobs:
       - name: Test the team's packages
         run: |
           source /opt/ros/jazzy/setup.bash
+          # The container user does not own the checkout; actions/checkout trusts it
+          # only during its own step.
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
           base="$(git merge-base origin/main HEAD)"
           mapfile -t main_packages < <(
             git ls-tree -r --name-only "${base}" -- src | grep '/package.xml$' |
