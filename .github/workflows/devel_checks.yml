@@ -1,0 +1,74 @@
+# Checks for the team branch devel. See AGENTS.md, section 2.
+# The job names are the required status checks in the devel ruleset:
+# rename them only together with the ruleset.
+name: devel checks
+
+on:
+  pull_request:
+    branches: [devel]
+  push:
+    branches: [devel]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main-files-untouched:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out with full history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # all branches, so origin/main and the merge base exist
+
+      - name: Only added files compared with main
+        run: bash .github/scripts/check_main_files_untouched.sh origin/main HEAD
+
+  jazzy-build:
+    runs-on: ubuntu-24.04
+    container: ros:jazzy-ros-base
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out with full history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # the test step needs origin/main to find Tomas's packages
+
+      - name: Install build and test dependencies
+        run: |
+          apt-get update
+          rosdep update --rosdistro jazzy
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy \
+            --dependency-types buildtool --dependency-types build \
+            --dependency-types build_export --dependency-types test
+
+      - name: Build
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --event-handlers console_cohesion+
+
+      # Tomas's packages are built but not tested: their tests are his concern, and
+      # without a test directory colcon collects lwa4p_driver/test_move.py (a CLI).
+      - name: Test the team's packages
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          base="$(git merge-base origin/main HEAD)"
+          mapfile -t main_packages < <(
+            git ls-tree -r --name-only "${base}" -- src | grep '/package.xml$' |
+              while read -r manifest; do
+                git show "${base}:${manifest}" | sed -n 's|.*<name>\(.*\)</name>.*|\1|p' | head -n 1
+              done)
+          skip_arguments=()
+          if (( ${#main_packages[@]} > 0 )); then
+            echo "Not testing Tomas's packages: ${main_packages[*]}"
+            skip_arguments=(--packages-skip "${main_packages[@]}")
+          fi
+          colcon test --event-handlers console_cohesion+ "${skip_arguments[@]}"
+          colcon test-result --verbose
