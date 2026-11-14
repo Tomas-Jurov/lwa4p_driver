@@ -1,0 +1,129 @@
+==================================================================================================
+              ROBOCUP 2027 SCHUNK LWA 4P MEDICAL MANIPULATION ARCHITECTURE
+==================================================================================================
+Implementation details: manipulation_implementation_proposal.md
+
++------------------------------------------------------------------------------------------------+
+│ OWNERSHIP                                                                                      │
+│                                                                                                │
+│ AI team            Behaviour tree: task logic and recovery policy                              │
+│ Perception team    Object detection and poses                                                  │
+│ Navigation team    Base motion, localisation, TF from the base to the arm                      │
+│ Manipulation team  Everything from the action interface down, and the failure enumeration      │
++------------------------------------------------------------------------------------------------+
+
+                                    +------------------------+
+                                    │   RGB-D Sensor Stream  │
+                                    +------------------------+
+                                                │
+                                                ▼
++------------------------------------------------------------------------------------------------+
+│ PERCEPTION & WORLD MODEL LAYER (Perception team)                                               │
+│                                                                                                │
+│ +---------------------------+  2D Pixels/Bounding Box  +-------------------------------------+ │
+│ │ VLM World Model Node      +-------------------------►│ TF2 3D Pose Estimator               │ │
+│ │ (Qwen2-VL / Florence-2)   │                          │ (Depth Lookup & Base Transform)     │ │
+│ +---------------------------+                          +-------------------------------------+ │
++------------------------------------------------------------------------------------------------+
+                                                │ Object pose (PoseStamped), class, orientation
+                                                ▼
++------------------------------------------------------------------------------------------------+
+│ HIGH-LEVEL TASK SUPERVISOR (AI team)                                                           │
+│                                                                                                │
+│ +--------------------------------------------------------------------------------------------+ │
+│ │ BehaviorTree.CPP Executive Engine                                                          │ │
+│ │   • Orchestrates skills (Detect -> Pick -> Navigate -> Place), not motion stages           │ │
+│ │   • Retry and recovery policy, branching on the failure code in each result                │ │
+│ +--------------------------------------------------------------------------------------------+ │
++------------------------------------------------------------------------------------------------+
+                  │ Action goal, cancel                     ▲ Result: SkillOutcome (failure code,
+                  │                                         │ failed step, object_held, arm_moved)
+                  ▼                                         │
++------------------------------------------------------------------------------------------------+
+│ ROS 2 ACTION INTERFACE (manipulation_interfaces)                                               │
+│                                                                                                │
+│ Actions   /manipulation/pick           /manipulation/place         /manipulation/set_gripper   │
+│           /manipulation/move_to_named  /manipulation/move_to_pose                              │
+│ Services  /manipulation/load_scene     /manipulation/update_objects                            │
+│ Topic     /manipulation/status  (held object, safe_to_drive, failures between actions)         │
+│                                                                                                │
+│ Every goal ends with a result carrying a failure code. Goals are never rejected.               │
++------------------------------------------------------------------------------------------------+
+                                                │
+                                                ▼
++------------------------------------------------------------------------------------------------+
+│ SKILL SERVER (manipulation_server, one skill at a time)                                        │
+│                                                                                                │
+│ +--------------------------------------------------------------------------------------------+ │
+│ │ Skill Runner: validate -> plan -> check -> execute -> verify -> report                     │ │
+│ │   • Failure Mapping: all low-level errors become one failure code, in one place            │ │
+│ │   • Scene Manager: only writer of the planning scene (scenes, objects, attach)             │ │
+│ │   • Trajectory Guard: applies the real driver's limits on every backend                    │ │
+│ │   • Plan Segmenter: splits the plan at gripper events, to check the grasp before lifting   │ │
+│ │   • Gripper Client & Hold Monitor: per-object force, grasp check, dropped-object check     │ │
+│ +--------------------------------------------------------------------------------------------+ │
+│                                                                                                │
+│ MOTION PLANNING (MoveIt Task Constructor, runs inside manipulation_server)                     │
+│                                                                                                │
+│ +--------------------------------------------------------------------------------------------+ │
+│ │ MoveIt Task Constructor (MTC) Stage Pipeline & Backtracking over Grasp Candidates          │ │
+│ +--------------------------------------------------------------------------------------------+ │
+│                 │                                          │                                   │
+│                 ▼                                          ▼                                   │
+│ +-----------------------------------+            +------------------------------------+        │
+│ │ OMPL (RRTConnect)                 │            │ CartesianPath                      │        │
+│ │ • Free motion, obstacle avoidance │            │ • Straight approach, lift, retreat │        │
+│ │                                   │            │ • Pilz LIN optional, not default   │        │
+│ +-----------------------------------+            +------------------------------------+        │
+│                                                                                                │
+│ Kinematics: KDL    Timing: Time-Optimal Parameterization    Gripper: Joint Interpolation       │
++------------------------------------------------------------------------------------------------+
+                  │ Arm batches (ExecuteTaskSolution)                   │ Gripper events
+                  ▼                                                     │ (GripperCommand)
++----------------------------------------------------------------+      │
+│ MOVE_GROUP                                                     │      │
+│                                                                │      │
+│ • Live planning scene                                          │      │
+│ • ExecuteTaskSolution capability (required on every backend)   │      │
++----------------------------------------------------------------+      │
+                  │ FollowJointTrajectory                               │
+                  ▼                                                     ▼
++------------------------------------------------------------------------------------------------+
+│ SHARED BACKEND INTERFACE (identical on every backend; only one backend runs at a time)         │
+│                                                                                                │
+│ arm_controller/follow_joint_trajectory      gripper_controller/gripper_cmd                     │
+│ /joint_states                               gripper/state                                      │
++------------------------------------------------------------------------------------------------+
+                       │                                                 │
+                       ▼                                                 ▼
++----------------------------------------------+  +----------------------------------------------+
+│ REAL ROBOT BACKEND (Python, unchanged)       │  │ SIMULATION BACKEND (ros2_control)            │
+│                                              │  │                                              │
+│ lwa4p_driver                                 │  │ controller_manager                           │
+│   • CANopen CiA 402, Profile Position mode   │  │   • joint_trajectory_controller              │
+│   • 20 Hz loop, SDO, 500 kbit/s (can0)       │  │   • joint_state_broadcaster                  │
+│   • Drive limits, fault trip, traces         │  │                                              │
+│                                              │  │ sim_gripper_server                           │
+│ gripper_node                                 │  │   • Same GripperCommand behaviour as the     │
+│   • WSG 50 protocol (can1)                   │  │     real gripper                             │
+│   • Force-controlled grasp                   │  │   • Detects a grasp from finger stall        │
++----------------------------------------------+  +----------------------------------------------+
+                       │                                                 │
+                       ▼                                                 ▼
++----------------------------------------------+  +----------------------------------------------+
+│ PHYSICAL HARDWARE LAYER                      │  │ SIMULATOR                                    │
+│                                              │  │                                              │
+│ SCHUNK POWERBALL LWA 4P MANIPULATOR          │  │ Isaac Sim 6.2    physics, needs an RTX GPU   │
+│   • 6x CiA 402 servo drives (nodes 3-8)      │  │                                              │
+│   • Dual-channel hardware E-stop             │  │ mock_components  no physics, for BT          │
+│ WEISS/SCHUNK WSG 50-110 GRIPPER (AUX CAN)    │  │                  development and tests       │
++----------------------------------------------+  +----------------------------------------------+
+
++------------------------------------------------------------------------------------------------+
+│ DELIBERATELY NOT IN THIS ARCHITECTURE                                                          │
+│                                                                                                │
+│ • MoveIt Servo and the velocity path: the real driver accepts trajectory goals only            │
+│ • ros2_control on the real arm, ros2_canopen, sync PDO, 1 Mbit/s: the Python driver stays      │
+│ • CPU core isolation and real-time priority: nothing to isolate in a 20 Hz Python driver       │
+│ • Ruckig: deferred. PickIK / TRAC-IK: KDL has been enough so far                               │
++------------------------------------------------------------------------------------------------+
