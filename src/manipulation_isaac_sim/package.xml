@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>manipulation_isaac_sim</name>
+  <version>0.1.0</version>
+  <description>
+    ROS 2 side of the Isaac Sim backend for the LWA 4P arm: the URDF prepared for the Isaac
+    importer, the ros2_control configuration of the simulated controller manager, and the
+    MoveIt launch file.
+  </description>
+  <maintainer email="165507983+dmitriiognev@users.noreply.github.com">Dmitrii Ognev</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>lwa4p_description</exec_depend>
+  <exec_depend>lwa4p_moveit_config</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>lwa4p_description</test_depend>
+  <test_depend>lwa4p_gazebo</test_depend>
+  <test_depend>lwa4p_moveit_config</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>xacro</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

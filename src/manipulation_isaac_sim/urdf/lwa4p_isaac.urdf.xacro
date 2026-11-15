@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- The robot description for the Isaac Sim backend.
+     Tomas's model unchanged, set up the way his Gazebo simulation sets it up
+     (lwa4p_gazebo/urdf/lwa4p_gazebo.urdf.xacro), without the Gazebo plugins:
+     - no lab obstacles: the simulated world brings its own objects;
+     - the full RealSense D435 frames at the hand-eye calibrated pose instead of
+       the collision box of the real-robot description.
+     The same file feeds robot_state_publisher and MoveIt, and, after
+     make_isaac_urdf, the Isaac URDF importer. -->
+<robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- declared before the include, so these defaults win over Tomas's -->
+  <xacro:arg name="wrist_camera" default="false"/>
+  <xacro:arg name="workspace_obstacles" default="false"/>
+  <xacro:include filename="$(find lwa4p_description)/urdf/lwa4p.urdf.xacro"/>
+  <xacro:include filename="$(find lwa4p_description)/urdf/realsense_d435.urdf.xacro"/>
+
+  <xacro:property name="cam" value="${xacro.load_yaml('$(find lwa4p_description)/config/camera_calibration.yaml')['camera_link']}"/>
+  <xacro:realsense_d435 parent="${cam['parent']}" name="camera"
+                        xyz="${' '.join(str(v) for v in cam['xyz'])}"
+                        rpy="${' '.join(str(v) for v in cam['rpy'])}"/>
+</robot>
