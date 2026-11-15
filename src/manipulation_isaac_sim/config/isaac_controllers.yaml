@@ -1,0 +1,39 @@
+# ros2_control configuration of the controller manager inside Isaac Sim
+# (isaacsim.ros2.control). Controller names, joints and tolerances as in Tomas's
+# Gazebo simulation (lwa4p_gazebo/config/ros2_controllers_gz.yaml), without its
+# workarounds: no finger_controller, because the fingers follow gripper_joint as
+# its URDF mimic joints inside Isaac Sim, and no gz_ros_control gain.
+controller_manager:
+  ros__parameters:
+    update_rate: 120  # Hz, the physics rate in isaac_sim/config/sim.yaml
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    gripper_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+arm_controller:
+  ros__parameters:
+    joints: [arm_1_joint, arm_2_joint, arm_3_joint, arm_4_joint, arm_5_joint, arm_6_joint]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    constraints:
+      stopped_velocity_tolerance: 0.02
+      goal_time: 5.0
+      arm_1_joint: {goal: 0.01}
+      arm_2_joint: {goal: 0.01}
+      arm_3_joint: {goal: 0.01}
+      arm_4_joint: {goal: 0.01}
+      arm_5_joint: {goal: 0.01}
+      arm_6_joint: {goal: 0.01}
+
+gripper_controller:
+  ros__parameters:
+    joints: [gripper_joint]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 5.0
+      gripper_joint: {goal: 0.002}

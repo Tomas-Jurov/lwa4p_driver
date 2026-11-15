@@ -74,7 +74,7 @@ CI exists to catch exactly that.
 2. **The workspace builds and our tests pass** on Jazzy (`ros:jazzy-ros-base`).
    Tomas's packages are built but not tested.
    Declare every build and test dependency of our packages in `package.xml`: CI installs only those through `rosdep`.
-3. **The model contract holds** (added together with `isaac_sim/`): the joint names, frames and controller names our code relies on still exist in Tomas's model.
+3. **The model contract holds** (`src/manipulation_isaac_sim/test/test_model_contract.py`, part of step 2): the joint names, frames, SRDF groups, named states and controller names our code relies on still exist in Tomas's model.
    If Tomas renames one, the `main → devel` pull request fails with a clear message.
 
 The `devel` ruleset requires these checks, a pull request, and an up-to-date branch, with an empty bypass list.
@@ -131,19 +131,19 @@ docker/run_jazzy.sh                                        # mounts src/ read-on
   Do not change Tomas's Dockerfiles.
 - Mock hardware, no physics: `ros2 launch lwa4p_moveit_config demo.launch.py`.
 - Gazebo Harmonic (Tomas's): `ros2 launch lwa4p_gazebo gazebo.launch.py`.
-- Isaac Sim: planned in `isaac_sim/` (§6).
+- Isaac Sim 6.2: `ISAACSIM_PATH=<Isaac Sim directory> isaac_sim/run.sh`, then `ros2 launch manipulation_isaac_sim isaac_moveit.launch.py` ([isaac_sim/README.md](isaac_sim/README.md)).
 
 ## 6. Backends and the shared interface
 
 Everything above the action level must work unchanged on every backend:
 `/arm_controller/follow_joint_trajectory`, the MoveIt `gripper` group and its named states, `/joint_states`, TF.
 
-| | Real robot | Mock | Gazebo (Tomas) | Isaac Sim (ours, planned) |
+| | Real robot | Mock | Gazebo (Tomas) | Isaac Sim (ours) |
 | --- | --- | --- | --- | --- |
-| Arm | Python driver, Profile Position (§7) | JTC, mock components | JTC | JTC through `topic_based_ros2_control` |
+| Arm | Python driver, Profile Position (§7) | JTC, mock components | JTC | JTC in the `controller_manager` inside Isaac Sim (`isaacsim.ros2.control`) |
 | `gripper_controller` | `GripperCommand`, `gripper_node` | `GripperActionController` | JTC on `gripper_joint` | as in Gazebo |
-| Force/torque | `ftm_node` (§7) | none | none | `WrenchStamped` on the `ftm_node` topics |
-| Camera | not started by Tomas's launch files | none | `/camera/...` from `gz_bridge.yaml` | the same topics as Gazebo |
+| Force/torque | `ftm_node` (§7) | none | none | planned: `WrenchStamped` on the `ftm_node` topics |
+| Camera | not started by Tomas's launch files | none | `/camera/...` from `gz_bridge.yaml` | planned: the same topics as Gazebo |
 | Physics | real | none | Tomas's workarounds (no gravity on the arm, PID force drives) | real: gravity, friction, contacts |
 
 - Skills command the gripper through the MoveIt `gripper` group, its named states (`open`, `tube_15mm`, `closed`), or one shared `grasp(width, force)` abstraction.

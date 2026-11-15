@@ -1,0 +1,50 @@
+# Isaac Sim backend settings (read by sim.py).
+# Physics values come from DaverSVK/ARM_simulation@66a8a66 (configs/robot.json,
+# src/catan_robot/robots/lwa4p.py), where the same arm and gripper grasp by friction.
+
+physics:
+  # 120 Hz: the controller manager runs once per physics step, so this is also its rate.
+  dt: 0.008333333333333333
+  device: cpu
+
+import:
+  collision_type: Convex Decomposition
+
+articulation:
+  solver_position_iterations: 64
+  solver_velocity_iterations: 16
+  # 0 keeps slow finger drives converging while the arm holds still.
+  sleep_threshold: 0.0
+
+# Position drives: joint-name regex -> [stiffness, damping].
+# Revolute joints in N m/rad and N m s/rad, prismatic joints in N/m and N s/m.
+# The force limit of every drive is the joint's URDF effort limit.
+drives:
+  'arm_[1-4]_joint': [4000.0, 120.0]
+  'arm_[5-6]_joint': [1000.0, 30.0]
+  # ARM_simulation's 200 N/m, 200 N s/m (time constant 1 s) made gripper_controller time
+  # out on Tomas's goal tolerance. Grip force is not tuned yet: a finger stopped by an
+  # object pushes with stiffness x remaining distance, up to the 80 N limit.
+  'gripper_.*joint': [2000.0, 100.0]
+
+# Start pose, as the initial values in Tomas's lwa4p_gazebo.urdf.xacro.
+# The fingers follow gripper_joint (gap) as its URDF mimic joints: left -gap/2, right +gap/2.
+initial_joint_positions:
+  arm_1_joint: 0.0
+  arm_2_joint: 0.0
+  arm_3_joint: 0.0
+  arm_4_joint: 0.0
+  arm_5_joint: 0.0
+  arm_6_joint: 0.0
+  gripper_joint: 0.085
+  gripper_finger_left_joint: -0.0425
+  gripper_finger_right_joint: 0.0425
+
+scene:
+  # Until the worlds are converted from Tomas's SDF files: a ground plane at the lab table
+  # top. Tomas measured the table at z -0.1062 m (lwa4p_description/urdf/wsg50.urdf.xacro).
+  ground_z: -0.1062
+
+viewport:
+  eye: [1.6, -1.2, 0.9]
+  target: [0.2, 0.0, 0.2]
