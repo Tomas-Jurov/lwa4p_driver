@@ -154,7 +154,6 @@ Everything above the action level must work unchanged on every backend:
   the ROS names are the real robot's, except the gripper action until D09 decides the adapter;
   the physics does not copy his workarounds, because RoboCup tasks need working friction and force feedback;
   no private `ros2_control` API;
-  worlds are converted from Tomas's SDF files (`lab` by default, `table` as an option).
   Physics parameters, the URDF import and the camera come from [`DaverSVK/ARM_simulation`](https://github.com/DaverSVK/ARM_simulation), which was made for this team: reuse its code and credit it.
 
 ## 7. Real-robot facts that constrain our code
