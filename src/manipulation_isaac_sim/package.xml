@@ -16,6 +16,7 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>lwa4p_description</exec_depend>
+  <exec_depend>lwa4p_gazebo</exec_depend>
   <exec_depend>lwa4p_moveit_config</exec_depend>
   <exec_depend>moveit_configs_utils</exec_depend>
   <exec_depend>moveit_ros_move_group</exec_depend>

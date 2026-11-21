@@ -56,6 +56,15 @@ def copy_meshes(mesh_copies: dict[str, str], mesh_dir: str) -> None:
         shutil.copyfile(source, copy)
 
 
+def named_states_with_mimics(root: ElementTree.Element, srdf_xml: str) -> dict:
+    """Return the SRDF states, each with the positions of the mimic joints it implies."""
+    states = isaac_urdf.named_states(srdf_xml)
+    for group_states in states.values():
+        for positions in group_states.values():
+            positions.update(isaac_urdf.mimic_positions(root, positions))
+    return states
+
+
 def main(argv: list[str] | None = None) -> int:
     arguments = parse_arguments(sys.argv[1:] if argv is None else argv)
     xacro_path = arguments.xacro or default_xacro_path()
@@ -84,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
         'digest': isaac_urdf.source_digest(urdf_xml, mesh_copies.values()),
         'effort_limits': isaac_urdf.joint_effort_limits(root),
         'disabled_collision_pairs': isaac_urdf.disabled_collision_pairs(srdf_xml),
+        'named_states': named_states_with_mimics(root, srdf_xml),
+        'mounted_links': isaac_urdf.mounted_links(root),
     }
     manifest_path = os.path.join(output_dir, MANIFEST_NAME)
     with open(manifest_path, 'w', encoding='utf-8') as manifest_file:

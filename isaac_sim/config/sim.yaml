@@ -27,23 +27,39 @@ drives:
   # object pushes with stiffness x remaining distance, up to the 80 N limit.
   'gripper_.*joint': [2000.0, 100.0]
 
-# Start pose, as the initial values in Tomas's lwa4p_gazebo.urdf.xacro.
-# The fingers follow gripper_joint (gap) as its URDF mimic joints: left -gap/2, right +gap/2.
-initial_joint_positions:
-  arm_1_joint: 0.0
-  arm_2_joint: 0.0
-  arm_3_joint: 0.0
-  arm_4_joint: 0.0
-  arm_5_joint: 0.0
-  arm_6_joint: 0.0
-  gripper_joint: 0.085
-  gripper_finger_left_joint: -0.0425
-  gripper_finger_right_joint: 0.0425
+# Start pose: SRDF named states per MoveIt group (lwa4p_moveit_config/config/lwa4p.srdf).
+# make_isaac_urdf adds the finger positions that follow gripper_joint as its mimic joints.
+initial_state:
+  arm: home
+  gripper: open
+
+# Contact materials: the only physics materials on the stage. The worlds carry none
+# (tools/clean_world.py) and the URDF importer writes none. Where two materials touch,
+# PhysX averages each value (its default combine mode).
+contact:
+  materials:
+    # Tomas's lab world: mu 0.8 on the table, the tubes and the caps. Not measured.
+    # Restitution 0: his SDF worlds have no <bounce>, which means 0 in Gazebo.
+    world: {static_friction: 0.8, dynamic_friction: 0.8, restitution: 0.0}
+    # Not measured: PhysX's default, which ARM_simulation's fingers grasped with (its
+    # objects 0.9). Gazebo's mu 3.0 on the fingers is one of Tomas's workarounds, not copied.
+    finger_pad: {static_friction: 0.5, dynamic_friction: 0.5, restitution: 0.0}
+  # Name regex -> material; the first matching pattern wins, and a pattern that matches
+  # nothing is an error. world: the models (top-level prims with colliders) of the world.
+  world:
+    '.*': world
+  # robot: URDF link names. Other links keep PhysX's default material (0.5, 0.5, 0).
+  robot:
+    'gripper_finger_(left|right)_link': finger_pad
 
 scene:
-  # Until the worlds are converted from Tomas's SDF files: a ground plane at the lab table
-  # top. Tomas measured the table at z -0.1062 m (lwa4p_description/urdf/wsg50.urdf.xacro).
-  ground_z: -0.1062
+  # Static environments in isaac_sim/scenes/, converted from Tomas's Gazebo worlds
+  # (src/lwa4p_gazebo/worlds/<name>_gz.sdf) and cleaned with tools/clean_world.sh.
+  # Their origin is the robot's world frame. run.sh --world <name> overrides the default.
+  world: lab
+  worlds:
+    lab: lwa4p_lab.usd
+    table: lwa4p_table.usd
 
 viewport:
   eye: [1.6, -1.2, 0.9]

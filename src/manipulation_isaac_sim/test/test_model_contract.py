@@ -5,10 +5,12 @@ If one of these tests fails after a `main -> devel` sync, Tomas renamed somethin
 update our code and configuration, never his files.
 """
 
+import copy
 import os
 from xml.etree import ElementTree
 
 from ament_index_python.packages import get_package_share_directory
+from manipulation_isaac_sim import isaac_urdf
 import pytest
 import xacro
 import yaml
@@ -69,10 +71,41 @@ def test_srdf_groups_and_states(srdf):
     assert {('gripper', name) for name in GRIPPER_STATES} <= states
 
 
-def test_moveit_controllers_match_tomas_simulation():
+def test_moveit_arm_execution_matches_the_real_robot():
+    """
+    The arm and the execution settings are the real robot's.
+
+    The gripper differs until the simulation gripper adapter is decided (D09): the real
+    gripper_node serves GripperCommand, Isaac Sim a trajectory controller on gripper_joint.
+    """
     ours = load_yaml(share('manipulation_isaac_sim', 'config', 'moveit_controllers.yaml'))
-    tomas = load_yaml(share('lwa4p_gazebo', 'config', 'moveit_controllers.yaml'))
-    assert ours == tomas, 'Tomas changed his MoveIt controllers: update ours to match'
+    real = load_yaml(share('lwa4p_moveit_config', 'config', 'moveit_controllers.yaml'))
+    section = 'moveit_simple_controller_manager'
+    assert ours[section]['arm_controller'] == real[section]['arm_controller'], \
+        'Tomas changed the real arm controller for MoveIt: update ours to match'
+    assert ours['trajectory_execution'] == real['trajectory_execution'], \
+        'Tomas changed the real execution settings: update ours to match'
+
+
+def test_workspace_obstacles_are_found(urdf):
+    """The lab obstacles are in the description, and removing them keeps the robot."""
+    removed = isaac_urdf.remove_workspace_obstacles(copy.deepcopy(urdf))
+    assert removed, (
+        f'no links named {isaac_urdf.OBSTACLE_PREFIX}* fixed to {isaac_urdf.WORLD_LINK}: '
+        'Tomas renamed the workspace obstacles; update isaac_urdf')
+    assert not set(removed) & set(FRAMES)
+
+
+def test_worlds_name_their_moveit_obstacles(urdf):
+    """Every world gives MoveIt obstacles: Tomas's measured ones or its SDF's static models."""
+    worlds = load_yaml(share('manipulation_isaac_sim', 'config', 'worlds.yaml'))
+    assert worlds
+    for name, world in worlds.items():
+        assert world['workspace_obstacles'] or world.get('sdf_obstacles'), name
+        if world.get('sdf_obstacles'):
+            with open(share('lwa4p_gazebo', world['sdf_obstacles']), encoding='utf-8') as file:
+                added = isaac_urdf.add_sdf_obstacles(copy.deepcopy(urdf), file.read())
+            assert added, f'{name}: {world["sdf_obstacles"]} has no static models'
 
 
 def test_isaac_controllers_serve_moveit():

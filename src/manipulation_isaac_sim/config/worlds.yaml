@@ -1,0 +1,17 @@
+# MoveIt's view of each Isaac Sim world (isaac_sim/config/sim.yaml, scene.worlds).
+# isaac_moveit.launch.py world:=<name> must name the world isaac_sim/run.sh --world runs.
+#
+# workspace_obstacles: keep Tomas's measured lab obstacles in the robot description, so
+# MoveIt plans around them as on the real robot. Isaac Sim never imports them: the world
+# has the same objects as rigid bodies (see isaac_urdf.remove_workspace_obstacles).
+# sdf_obstacles: an SDF world in lwa4p_gazebo whose static models become obstacles for
+# MoveIt (isaac_urdf.add_sdf_obstacles): the file the world USD was converted from.
+lab:
+  # The lab world is the scanned lab: the table, the T-profile frame, the cap dispenser and
+  # the tube racks at the poses of the obstacles.
+  workspace_obstacles: true
+table:
+  # Tomas's table world has none of the lab's objects; MoveIt sees its own static models:
+  # the floor, the stand and the two bins.
+  workspace_obstacles: false
+  sdf_obstacles: worlds/lwa4p_table_gz.sdf

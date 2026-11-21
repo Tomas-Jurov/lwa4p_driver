@@ -1,5 +1,8 @@
-# MoveIt controllers for the Isaac Sim backend: the same controllers and execution
-# settings as Tomas's Gazebo simulation (lwa4p_gazebo/config/moveit_controllers.yaml).
+# MoveIt controllers for the Isaac Sim backend. The arm and the execution settings are
+# the real robot's (lwa4p_moveit_config/config/moveit_controllers.yaml; a test compares
+# them). The gripper is a trajectory controller on gripper_joint, where the real robot
+# has GripperCommand: Isaac Sim ships no gripper action controller, and the simulation
+# gripper adapter is still open (decision D09).
 moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
 moveit_simple_controller_manager:

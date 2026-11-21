@@ -3,8 +3,12 @@
 # natively on a host without its own ROS installation. Team file, not part of Tomas's main.
 #
 # The same container as docker/run_jazzy.sh (sources read-only, X11, host network and IPC),
-# with two additions:
+# with three additions:
 #   - ROS_DOMAIN_ID of this shell is passed into the container (default 0);
+#   - Fast DDS uses UDP only. Its default shared-memory transport fails between this root
+#     container and Isaac Sim running as the host user: discovery works, but the segments
+#     the container creates in /dev/shm are not writable for the host user, so no data or
+#     service response arrives (the spawner times out on list_controllers);
 #   - on start, make_isaac_urdf writes the robot files for isaac_sim/run.sh into
 #     isaac_sim/.cache/robot. That directory is mounted read-write at the same absolute path,
 #     so the paths inside the files are valid on the host too.
@@ -24,7 +28,7 @@ xhost +local:root >/dev/null 2>&1 || true
 exec docker run --rm -it --name lwa4p_jazzy_hybrid \
   --network host --ipc host \
   -e DISPLAY="${DISPLAY:-:0}" -e QT_X11_NO_MITSHM=1 \
-  -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
+  -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" -e FASTDDS_BUILTIN_TRANSPORTS=UDPv4 \
   -e ROBOT_DIR="${ROBOT_DIR}" -e HOST_IDS="$(id -u):$(id -g)" \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
   --device /dev/dri \

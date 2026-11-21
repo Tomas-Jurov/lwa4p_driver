@@ -1,8 +1,8 @@
 # ros2_control configuration of the controller manager inside Isaac Sim
-# (isaacsim.ros2.control). Controller names, joints and tolerances as in Tomas's
-# Gazebo simulation (lwa4p_gazebo/config/ros2_controllers_gz.yaml), without its
-# workarounds: no finger_controller, because the fingers follow gripper_joint as
-# its URDF mimic joints inside Isaac Sim, and no gz_ros_control gain.
+# (isaacsim.ros2.control). The controller names are the ones MoveIt uses on every
+# backend; the fingers follow gripper_joint as its URDF mimic joints inside Isaac Sim.
+# The goal tolerances are not derived from the real driver yet, which aborts on a
+# tracking error above 8 degrees (AGENTS.md section 7).
 controller_manager:
   ros__parameters:
     update_rate: 120  # Hz, the physics rate in isaac_sim/config/sim.yaml

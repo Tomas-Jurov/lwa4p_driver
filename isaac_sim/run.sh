@@ -2,7 +2,8 @@
 # Start the Isaac Sim backend: get the robot files generated from Tomas's model, then run
 # sim.py with Isaac Sim's own Python and its bundled ROS 2 Jazzy libraries.
 #
-# Usage: ISAACSIM_PATH=<Isaac Sim 6.2 directory> isaac_sim/run.sh [--headless] [--max-time S]
+# Usage: ISAACSIM_PATH=<Isaac Sim 6.2 directory> isaac_sim/run.sh [--world lab|table] [--headless]
+#        [--max-time S]
 # The robot files (.cache/robot) come from, in this order:
 #   1. the running docker/run_jazzy_hybrid.sh container, which wrote them when it started;
 #   2. ROS 2 Jazzy on the host with this workspace built: generated here on every start;

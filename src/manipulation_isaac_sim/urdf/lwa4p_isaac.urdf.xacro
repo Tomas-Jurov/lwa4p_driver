@@ -1,21 +1,27 @@
 <?xml version="1.0"?>
-<!-- The robot description for the Isaac Sim backend.
-     Tomas's model unchanged, set up the way his Gazebo simulation sets it up
-     (lwa4p_gazebo/urdf/lwa4p_gazebo.urdf.xacro), without the Gazebo plugins:
-     - no lab obstacles: the simulated world brings its own objects;
-     - the full RealSense D435 frames at the hand-eye calibrated pose instead of
-       the collision box of the real-robot description.
-     The same file feeds robot_state_publisher and MoveIt, and, after
-     make_isaac_urdf, the Isaac URDF importer. -->
+<!-- The robot description of the Isaac Sim backend: the real robot's.
+     Tomas's lwa4p.urdf.xacro with its own defaults, so MoveIt plans with the same
+     model as on the real arm: the measured lab obstacles, the base column and the
+     generous camera collision box. Two additions, the frames that realsense2_camera
+     publishes on the real robot and no simulator does:
+       camera_color_optical_frame, camera_depth_optical_frame (REP 103 optical axes;
+       both at camera_link, as the simulated camera will be aligned to colour).
+     Where a world brings the obstacles itself, they are removed from the parsed URDF
+     (isaac_urdf.remove_workspace_obstacles), never switched off through the xacro
+     argument: that would also swap the base column for a Gazebo workaround.
+     robot_state_publisher and MoveIt use it, and, after make_isaac_urdf, the Isaac
+     URDF importer. -->
 <robot name="lwa4p" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <!-- declared before the include, so these defaults win over Tomas's -->
-  <xacro:arg name="wrist_camera" default="false"/>
-  <xacro:arg name="workspace_obstacles" default="false"/>
   <xacro:include filename="$(find lwa4p_description)/urdf/lwa4p.urdf.xacro"/>
-  <xacro:include filename="$(find lwa4p_description)/urdf/realsense_d435.urdf.xacro"/>
 
-  <xacro:property name="cam" value="${xacro.load_yaml('$(find lwa4p_description)/config/camera_calibration.yaml')['camera_link']}"/>
-  <xacro:realsense_d435 parent="${cam['parent']}" name="camera"
-                        xyz="${' '.join(str(v) for v in cam['xyz'])}"
-                        rpy="${' '.join(str(v) for v in cam['rpy'])}"/>
+  <xacro:macro name="optical_frame" params="name">
+    <joint name="camera_${name}_optical_joint" type="fixed">
+      <parent link="camera_link"/>
+      <child link="camera_${name}_optical_frame"/>
+      <origin xyz="0 0 0" rpy="${-pi / 2} 0 ${-pi / 2}"/>
+    </joint>
+    <link name="camera_${name}_optical_frame"/>
+  </xacro:macro>
+  <xacro:optical_frame name="color"/>
+  <xacro:optical_frame name="depth"/>
 </robot>

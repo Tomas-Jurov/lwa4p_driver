@@ -7,24 +7,47 @@ from xml.etree import ElementTree
 from pxr import PhysxSchema
 from pxr import Usd
 from pxr import UsdPhysics
+from simulation import contact
 
 ANGULAR = 'angular'
 LINEAR = 'linear'
 
 
-def configure_robot(stage: Usd.Stage, robot_path: str, robot_manifest: dict, config: dict) -> None:
-    """Apply drives, start pose, solver settings and self-collision filtering."""
+def configure_robot(stage: Usd.Stage, robot_path: str, robot_manifest: dict,
+                    config: dict) -> list[Usd.Prim]:
+    """
+    Apply drives, start pose, solver settings, contact materials, self-collision filter.
+
+    Returns the rigid bodies of the mounted base: the links fixed to the world link.
+    """
     robot = stage.GetPrimAtPath(robot_path)
     joints = {
         prim.GetName(): prim
         for prim in Usd.PrimRange(robot) if prim.IsA(UsdPhysics.Joint)
     }
+    child_link_joints = _child_link_joints(robot_manifest['urdf'])
     _configure_drives(joints, config['drives'], robot_manifest['effort_limits'],
-                      config['initial_joint_positions'])
+                      _initial_positions(robot_manifest['named_states'], config['initial_state']))
     _configure_articulation(robot, config['articulation'])
+    links = {link: body for link in child_link_joints
+             if (body := _link_body(stage, joints, child_link_joints, link)) is not None}
+    bound = contact.bind_by_name(stage, links, config['contact']['robot'],
+                                 config['contact']['materials'], 'robot link')
+    print(f'[isaac_sim] robot contact materials: {bound}', flush=True)
     _filter_collision_pairs(
-        stage, joints, _child_link_joints(robot_manifest['urdf']),
-        robot_manifest['disabled_collision_pairs'])
+        stage, joints, child_link_joints, robot_manifest['disabled_collision_pairs'])
+    return [links[link] for link in robot_manifest['mounted_links'] if link in links]
+
+
+def _initial_positions(named_states: dict, initial_state: dict) -> dict[str, float]:
+    """Merge the SRDF states chosen per group, for example arm: home, gripper: open."""
+    positions = {}
+    for group, state in initial_state.items():
+        if state not in named_states.get(group, {}):
+            raise ValueError(f'the SRDF has no state {state!r} for group {group!r}; it has '
+                             f'{sorted(named_states.get(group, {}))}')
+        positions.update(named_states[group][state])
+    return positions
 
 
 def _configure_drives(joints: dict, drives: dict, effort_limits: dict,
