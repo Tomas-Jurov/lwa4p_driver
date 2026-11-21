@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Start the Isaac Sim backend: generate the URDF from Tomas's model, then run sim.py
-# with Isaac Sim's own Python and its bundled ROS 2 Jazzy libraries.
+# Start the Isaac Sim backend: get the robot files generated from Tomas's model, then run
+# sim.py with Isaac Sim's own Python and its bundled ROS 2 Jazzy libraries.
 #
 # Usage: ISAACSIM_PATH=<Isaac Sim 6.2 directory> isaac_sim/run.sh [--headless] [--max-time S]
-# Needs the workspace built: colcon build (in the repository root).
+# The robot files (.cache/robot) come from, in this order:
+#   1. the running docker/run_jazzy_hybrid.sh container, which wrote them when it started;
+#   2. ROS 2 Jazzy on the host with this workspace built: generated here on every start;
+#   3. the files an earlier hybrid container left behind.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,11 +17,6 @@ if [[ -z "${ISAACSIM_PATH:-}" || ! -x "${ISAACSIM_PATH}/python.sh" ]]; then
   echo "Set ISAACSIM_PATH to the Isaac Sim 6.2 directory (the one with python.sh)." >&2
   exit 1
 fi
-if [[ ! -f "${REPOSITORY}/install/setup.bash" ]]; then
-  echo "Build the workspace first: cd ${REPOSITORY} && colcon build" >&2
-  exit 1
-fi
-
 ros_side() {
   # setup.bash reads unset variables, so relax -u while sourcing.
   set +u
@@ -28,9 +26,35 @@ ros_side() {
   "$@"
 }
 
-robot_manifest="$(ros_side ros2 run manipulation_isaac_sim make_isaac_urdf \
-  --output-dir "${CACHE}/urdf")"
-controllers="$(ros_side ros2 pkg prefix --share manipulation_isaac_sim)/config/isaac_controllers.yaml"
+hybrid_container_running() {
+  [[ "$(docker container inspect -f '{{.State.Running}}' lwa4p_jazzy_hybrid 2>/dev/null)" \
+    == true ]]
+}
+
+host_ros_ready() {
+  # A leftover install/ (for example a symlink install without its build/) has setup.bash
+  # but no usable packages, so ask ROS for the package instead of testing for files.
+  [[ -f /opt/ros/jazzy/setup.bash && -f "${REPOSITORY}/install/setup.bash" ]] \
+    && (ros_side ros2 pkg prefix manipulation_isaac_sim) >/dev/null 2>&1
+}
+
+robot_dir="${CACHE}/robot"
+robot_manifest="${robot_dir}/manifest.json"
+if hybrid_container_running && [[ -f "${robot_manifest}" ]]; then
+  echo "[run.sh] robot files: written by the running lwa4p_jazzy_hybrid container in ${robot_dir}"
+elif host_ros_ready; then
+  echo "[run.sh] robot files: generated with the host's ROS 2 in ${robot_dir}"
+  ros_side ros2 run manipulation_isaac_sim make_isaac_urdf --output-dir "${robot_dir}" >/dev/null
+elif [[ -f "${robot_manifest}" ]]; then
+  echo "[run.sh] robot files: left by an earlier docker/run_jazzy_hybrid.sh in ${robot_dir};" \
+    "restart it if the model changed since"
+else
+  echo "No robot files in ${robot_dir}." >&2
+  echo "Start docker/run_jazzy_hybrid.sh first, or build the workspace with ROS 2 Jazzy on" \
+    "the host: cd ${REPOSITORY} && colcon build" >&2
+  exit 1
+fi
+controllers="${robot_dir}/isaac_controllers.yaml"
 
 # Isaac Sim's Python must not see the system ROS installation. Its ROS 2 bridge loads
 # the Jazzy libraries shipped with Isaac Sim instead.

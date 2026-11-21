@@ -50,6 +50,22 @@ def test_relative_mesh_path_is_rejected():
         isaac_urdf.resolve_mesh_path('meshes/base.stl', resolve)
 
 
+def test_meshes_are_bundled_below_their_common_directory():
+    root = isaac_urdf.prepare_urdf(URDF, resolve)
+    copies = isaac_urdf.bundle_meshes(root, '/bundle/meshes')
+    assert copies == {
+        '/opt/meshes/tip.stl': '/bundle/meshes/opt/meshes/tip.stl',
+        '/share/some_description/meshes/base.stl':
+            '/bundle/meshes/share/some_description/meshes/base.stl',
+    }
+    assert isaac_urdf.mesh_paths(root) == sorted(copies.values())
+
+
+def test_bundle_without_meshes_is_empty():
+    root = isaac_urdf.prepare_urdf('<robot name="empty"><link name="base"/></robot>', resolve)
+    assert isaac_urdf.bundle_meshes(root, '/bundle/meshes') == {}
+
+
 def test_effort_limits_of_actuated_joints_only():
     root = isaac_urdf.prepare_urdf(URDF, resolve)
     assert isaac_urdf.joint_effort_limits(root) == {'slide': 80.0}

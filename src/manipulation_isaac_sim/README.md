@@ -10,11 +10,12 @@ The Isaac Sim side (the simulator process, physics, scene) lives in [`isaac_sim/
 - `urdf/lwa4p_isaac.urdf.xacro`: the robot description of this backend.
   It is Tomas's model, set up as in his Gazebo simulation: no lab obstacles, the RealSense D435 frames at the hand-eye calibrated pose.
   `robot_state_publisher`, MoveIt and the Isaac importer all use it.
-- `make_isaac_urdf`: writes the URDF for the Isaac URDF importer and a `manifest.json` next to it.
-  `isaac_sim/run.sh` calls it on every start, so changes in Tomas's model reach the simulation without any copied files.
+- `make_isaac_urdf`: writes the robot files for the Isaac Sim side into one directory: the URDF for the Isaac URDF importer, copies of its meshes, `isaac_controllers.yaml` and a `manifest.json`.
+  The directory is self-contained, so Isaac Sim reads it without ROS, also when the ROS side runs in a container (`docker/run_jazzy_hybrid.sh`).
+  `isaac_sim/run.sh` or `docker/run_jazzy_hybrid.sh` calls it on every start, so changes in Tomas's model reach the simulation without any committed copies.
   The URDF differs from the description only in what the importer needs:
   - `<ros2_control>` and `<gazebo>` tags removed;
-  - mesh URIs replaced by absolute paths;
+  - mesh URIs replaced by absolute paths of the copies in the output directory;
   - a 1 g mass on massless links between other links (`arm_tool0`, `ftm_tool0`).
     The importer makes such links plain transforms, and the URDF export inside `isaacsim.ros2.control` then loses every joint below them, including the gripper.
 

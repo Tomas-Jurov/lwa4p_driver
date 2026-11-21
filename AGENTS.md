@@ -132,6 +132,7 @@ docker/run_jazzy.sh                                        # mounts src/ read-on
 - Mock hardware, no physics: `ros2 launch lwa4p_moveit_config demo.launch.py`.
 - Gazebo Harmonic (Tomas's): `ros2 launch lwa4p_gazebo gazebo.launch.py`.
 - Isaac Sim 6.2: `ISAACSIM_PATH=<Isaac Sim directory> isaac_sim/run.sh`, then `ros2 launch manipulation_isaac_sim isaac_moveit.launch.py` ([isaac_sim/README.md](isaac_sim/README.md)).
+  Without ROS on the host, run the ROS side in Tomas's image with `docker/run_jazzy_hybrid.sh`, started before `run.sh`.
 
 ## 6. Backends and the shared interface
 

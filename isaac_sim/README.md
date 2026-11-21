@@ -11,8 +11,8 @@ The physics does not copy his Gazebo workarounds: gravity acts on the arm, and t
 
 ```text
 isaac_sim/run.sh
- ├─ ros2 run manipulation_isaac_sim make_isaac_urdf   (system Jazzy)
- │    Tomas's xacro → .cache/urdf/robot.urdf + manifest.json
+ ├─ ros2 run manipulation_isaac_sim make_isaac_urdf   (host Jazzy, or docker/run_jazzy_hybrid.sh)
+ │    Tomas's xacro → .cache/robot/: robot.urdf, meshes/, isaac_controllers.yaml, manifest.json
  └─ $ISAACSIM_PATH/python.sh sim.py                    (Isaac Sim's Python, its bundled Jazzy libraries)
       ├─ URDF → USD with the official URDF importer, cached in .cache/usd/<key>/
       ├─ drives, solver, self-collision filter (simulation/robot_setup.py)
@@ -21,7 +21,7 @@ isaac_sim/run.sh
            controller_manager inside Isaac Sim, stepped with the physics:
            joint_state_broadcaster, arm_controller, gripper_controller
 
-ros2 launch manipulation_isaac_sim isaac_moveit.launch.py   (system Jazzy)
+ros2 launch manipulation_isaac_sim isaac_moveit.launch.py   (host Jazzy, or docker/run_jazzy_hybrid.sh)
       robot_state_publisher, controller spawner, move_group, RViz
 ```
 
@@ -58,10 +58,14 @@ All values are in [`config/sim.yaml`](config/sim.yaml).
 
 - Isaac Sim 6.2 (standalone).
   The ROS 2 bridge and `isaacsim.ros2.control` ship with it, including their Jazzy libraries.
-- ROS 2 Jazzy with MoveIt on the host, and this workspace built: `colcon build` in the repository root.
+- The ROS side, one of:
+  - ROS 2 Jazzy with MoveIt on the host, and this workspace built: `colcon build` in the repository root;
+  - Docker with Tomas's image, `docker build -f docker/Dockerfile.jazzy -t lwa4p:jazzy .`, and no ROS on the host.
 - An NVIDIA GPU; development runs on an RTX 3070 Laptop (8 GB).
 
 ## Run
+
+With ROS 2 Jazzy on the host:
 
 ```bash
 # terminal 1: the simulator; the first start compiles shaders and imports the robot
@@ -74,6 +78,29 @@ export ROS_DOMAIN_ID=<n>
 source install/setup.bash
 ros2 launch manipulation_isaac_sim isaac_moveit.launch.py
 ```
+
+With the ROS side in a container:
+
+```bash
+# terminal 1: the ROS side; builds the workspace and writes the robot files, then opens a shell
+docker/run_jazzy_hybrid.sh
+
+# terminal 2: the simulator, with the robot files the container wrote
+ISAACSIM_PATH=<Isaac Sim 6.2 directory> isaac_sim/run.sh
+
+# terminal 1, after "[isaac_sim] launched fully"
+ros2 launch manipulation_isaac_sim isaac_moveit.launch.py
+```
+
+- `docker/run_jazzy_hybrid.sh` starts the same container as Tomas's `docker/run_jazzy.sh`, and adds two things.
+  It passes `ROS_DOMAIN_ID` into the container.
+  It mounts `isaac_sim/.cache/robot` read-write at the same absolute path, and writes the robot files there with `make_isaac_urdf`.
+  The paths inside the files are therefore valid on the host, and Isaac Sim needs no ROS installation.
+- The container writes the robot files only when it starts.
+  After a change to the model or to `isaac_controllers.yaml`, restart the container before `run.sh`.
+- While the `lwa4p_jazzy_hybrid` container runs, `run.sh` uses its robot files, even when the host has ROS 2 Jazzy too.
+  Without the container, `run.sh` generates them with the host's ROS 2 if it finds `manipulation_isaac_sim` there, and otherwise uses the files the last container left.
+- A second shell in the container: `docker exec -it lwa4p_jazzy_hybrid bash`.
 
 Check without MoveIt:
 

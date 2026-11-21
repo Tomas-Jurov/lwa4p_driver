@@ -78,6 +78,24 @@ def mesh_paths(root: ElementTree.Element) -> list[str]:
     return sorted({mesh.get('filename') for mesh in root.iter('mesh')})
 
 
+def bundle_meshes(root: ElementTree.Element, mesh_dir: str) -> dict[str, str]:
+    """
+    Point every mesh of the URDF to a copy under mesh_dir; return {source: copy}.
+
+    The caller copies the files. A copy keeps the path below the common directory of all
+    meshes, so equal file names from different packages stay apart.
+    """
+    sources = mesh_paths(root)
+    if not sources:
+        return {}
+    common = os.path.commonpath([os.path.dirname(source) for source in sources])
+    copies = {
+        source: os.path.join(mesh_dir, os.path.relpath(source, common)) for source in sources}
+    for mesh in root.iter('mesh'):
+        mesh.set('filename', copies[mesh.get('filename')])
+    return copies
+
+
 def joint_effort_limits(root: ElementTree.Element) -> dict[str, float]:
     """Return the URDF effort limit of every actuated joint."""
     limits = {}
