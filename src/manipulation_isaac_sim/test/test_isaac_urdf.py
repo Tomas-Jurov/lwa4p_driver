@@ -4,6 +4,8 @@ from xml.etree import ElementTree
 
 from manipulation_isaac_sim import isaac_urdf
 import pytest
+from test_mesh_inertia import box
+from test_mesh_inertia import write_binary_stl
 
 URDF = """<robot name="test">
   <link name="base"><visual><geometry>
@@ -187,6 +189,94 @@ def test_static_sdf_models_become_obstacles():
     floor = root.find("link[@name='obstacle_ground']/collision")
     assert floor.find('geometry/box').get('size') == '20 20 0.01'
     assert floor.find('origin').get('xyz') == '0.0 0.0 -0.005'
+
+
+def inertial_urdf(tmp_path, visual_origin=''):
+    """Return a one-link URDF whose visual mesh is the 0.1 x 0.2 x 0.3 m box at (0, 0, 0)."""
+    mesh = tmp_path / 'box.stl'
+    write_binary_stl(mesh, box((0.1, 0.2, 0.3)))
+    return ElementTree.fromstring(f"""<robot name="test">
+      <link name="body"><visual>{visual_origin}<geometry><mesh filename="{mesh}"/></geometry>
+      </visual><inertial><mass value="1.0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/></inertial></link>
+      <link name="frame"/>
+    </robot>""")
+
+
+def test_link_inertials_come_from_the_mesh(tmp_path):
+    root = inertial_urdf(tmp_path)
+    assert isaac_urdf.apply_link_inertials(
+        root, {'body': {'mass': 6.0, 'model': 'solid'}}) == {'body': 6.0}
+    inertials = root.findall("link[@name='body']/inertial")
+    assert len(inertials) == 1
+    assert inertials[0].find('mass').get('value') == '6'
+    assert inertials[0].find('origin').get('xyz') == '0.05 0.1 0.15'
+    inertia = inertials[0].find('inertia')
+    assert float(inertia.get('ixx')) == pytest.approx(6.0 / 12 * (0.2 ** 2 + 0.3 ** 2))
+    assert float(inertia.get('izz')) == pytest.approx(6.0 / 12 * (0.1 ** 2 + 0.2 ** 2))
+    assert float(inertia.get('ixy')) == pytest.approx(0.0, abs=1e-9)
+
+
+def test_link_inertials_reject_what_they_cannot_compute(tmp_path):
+    root = inertial_urdf(tmp_path)
+    with pytest.raises(ValueError, match='no link'):
+        isaac_urdf.apply_link_inertials(root, {'missing': {'mass': 1.0, 'model': 'solid'}})
+    with pytest.raises(ValueError, match='visual'):
+        isaac_urdf.apply_link_inertials(root, {'frame': {'mass': 1.0, 'model': 'solid'}})
+    with pytest.raises(ValueError, match='unknown keys'):
+        isaac_urdf.apply_link_inertials(root, {'body': {'mass': 1.0, 'model': 'solid',
+                                                        'density': 2700}})
+    shifted = inertial_urdf(tmp_path, '<origin xyz="0 0 0.1"/>')
+    with pytest.raises(ValueError, match='origin'):
+        isaac_urdf.apply_link_inertials(shifted, {'body': {'mass': 1.0, 'model': 'solid'}})
+
+
+CAMERA = """<robot name="test">
+  <link name="camera">
+    <visual><geometry><box size="0.06 0.13 0.05"/></geometry></visual>
+    <collision><origin xyz="-0.02 0 0"/><geometry><box size="0.06 0.13 0.05"/></geometry>
+    </collision>
+  </link>
+</robot>"""
+
+
+def test_collisions_are_replaced_and_visuals_kept():
+    root = ElementTree.fromstring(CAMERA)
+    assert isaac_urdf.replace_collisions(root, {'camera': [
+        {'box': [0.025, 0.09, 0.025], 'origin': {'xyz': [-0.008, -0.0175, 0.0]}},
+        {'sphere': 0.01},
+        {'cylinder': {'radius': 0.01, 'length': 0.02}, 'origin': {'rpy': [0.0, 1.5, 0.0]}},
+    ]}) == ['camera']
+    collisions = root.findall("link[@name='camera']/collision")
+    assert [collision.find('geometry')[0].tag for collision in collisions] == [
+        'box', 'sphere', 'cylinder']
+    assert collisions[0].find('geometry/box').get('size') == '0.025 0.09 0.025'
+    assert collisions[0].find('origin').get('xyz') == '-0.008 -0.0175 0.0'
+    assert collisions[2].find('origin').get('rpy') == '0.0 1.5 0.0'
+    assert root.find("link[@name='camera']/visual/geometry/box").get('size') == '0.06 0.13 0.05'
+
+
+def test_collision_overrides_reject_bad_shapes():
+    root = ElementTree.fromstring(CAMERA)
+    with pytest.raises(ValueError, match='no link'):
+        isaac_urdf.replace_collisions(root, {'missing': [{'sphere': 0.1}]})
+    with pytest.raises(ValueError, match='one of'):
+        isaac_urdf.replace_collisions(root, {'camera': [{'box': [1, 1, 1], 'sphere': 0.1}]})
+    with pytest.raises(ValueError, match='one of'):
+        isaac_urdf.replace_collisions(root, {'camera': [{'mesh': 'camera.stl'}]})
+
+
+def test_link_without_visual_mesh_is_a_solid_collision_box():
+    root = ElementTree.fromstring(CAMERA)
+    isaac_urdf.replace_collisions(
+        root, {'camera': [{'box': [0.1, 0.2, 0.3], 'origin': {'xyz': [-0.01, -0.02, 0.0]}}]})
+    isaac_urdf.apply_link_inertials(root, {'camera': {'mass': 0.072, 'model': 'solid'}})
+    inertial = root.find("link[@name='camera']/inertial")
+    assert inertial.find('origin').get('xyz') == '-0.01 -0.02 0'
+    assert float(inertial.find('inertia').get('ixx')) == pytest.approx(
+        0.072 / 12 * (0.2 ** 2 + 0.3 ** 2))
+    with pytest.raises(ValueError, match='solid'):
+        isaac_urdf.apply_link_inertials(root, {'camera': {'mass': 0.072, 'model': 'shell'}})
 
 
 def test_mounted_links_stop_at_moving_joints_and_obstacles():

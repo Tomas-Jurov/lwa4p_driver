@@ -4,6 +4,8 @@
 #
 # Usage: ISAACSIM_PATH=<Isaac Sim 6.2 directory> isaac_sim/run.sh [--world lab|table] [--headless]
 #        [--max-time S]
+# ISAAC_INERTIALS=urdf keeps the arm masses of Tomas's model instead of the datasheet masses
+# (make_isaac_urdf --inertials); with the hybrid container, set it for run_jazzy_hybrid.sh.
 # The robot files (.cache/robot) come from, in this order:
 #   1. the running docker/run_jazzy_hybrid.sh container, which wrote them when it started;
 #   2. ROS 2 Jazzy on the host with this workspace built: generated here on every start;
@@ -41,11 +43,13 @@ host_ros_ready() {
 
 robot_dir="${CACHE}/robot"
 robot_manifest="${robot_dir}/manifest.json"
+inertials="${ISAAC_INERTIALS:-datasheet}"
 if hybrid_container_running && [[ -f "${robot_manifest}" ]]; then
   echo "[run.sh] robot files: written by the running lwa4p_jazzy_hybrid container in ${robot_dir}"
 elif host_ros_ready; then
   echo "[run.sh] robot files: generated with the host's ROS 2 in ${robot_dir}"
-  ros_side ros2 run manipulation_isaac_sim make_isaac_urdf --output-dir "${robot_dir}" >/dev/null
+  ros_side ros2 run manipulation_isaac_sim make_isaac_urdf --output-dir "${robot_dir}" \
+    --inertials "${inertials}" >/dev/null
 elif [[ -f "${robot_manifest}" ]]; then
   echo "[run.sh] robot files: left by an earlier docker/run_jazzy_hybrid.sh in ${robot_dir};" \
     "restart it if the model changed since"
@@ -54,6 +58,12 @@ else
   echo "Start docker/run_jazzy_hybrid.sh first, or build the workspace with ROS 2 Jazzy on" \
     "the host: cd ${REPOSITORY} && colcon build" >&2
   exit 1
+fi
+written_inertials="$(grep -o '"inertials": *"[a-z]*"' "${robot_manifest}" | cut -d'"' -f4 || true)"
+if [[ "${written_inertials}" != "${inertials}" ]]; then
+  echo "[run.sh] warning: the robot files have inertials '${written_inertials:-unknown}'," \
+    "ISAAC_INERTIALS asks for '${inertials}'; restart docker/run_jazzy_hybrid.sh with" \
+    "ISAAC_INERTIALS=${inertials}" >&2
 fi
 controllers="${robot_dir}/isaac_controllers.yaml"
 

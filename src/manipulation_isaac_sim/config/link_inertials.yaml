@@ -1,0 +1,30 @@
+# Link masses for the Isaac Sim URDF (make_isaac_urdf --inertials datasheet, the default).
+# make_isaac_urdf computes each link's centre of mass and inertia tensor from its visual
+# mesh in Tomas's model carrying this mass, and replaces the link's <inertial>.
+# `make_isaac_urdf --inertials urdf` keeps Tomas's inertials (1 kg and 0.01 kg m^2 per arm
+# link, centre of mass on the joint axis).
+#
+# Sources:
+#   - SCHUNK LWA 4P assembly and operating manual 1344817, 3.2: arm 12 kg without base,
+#     15 kg with base.
+#   - SCHUNK ERB assembly and operating manual 389537, 3.1: ERB 145 3.9 kg, ERB 115 1.8 kg
+#     (each double-axis module).
+#   - The split of the remaining 2.4 kg between the two connecting elements and of the
+#     ERB 115 between its housing and its output flange is estimated, as in
+#     DaverSVK/ARM_simulation@66a8a66 (assets/lwa4p/tools/make_isaac_urdf.py).
+#
+# model: solid = mass spread through the closed mesh (modules full of motors and gears);
+#        shell = mass on the surface (hollow aluminium connecting elements).
+# The base (arm_podest_link, 3 kg by the manual) is fixed to the world, so its mass has
+# no effect and Tomas's value stays. The FTM 75 and the WSG 50 keep Tomas's masses, which
+# match their datasheets. Tomas gives camera_link no mass; it gets the D435's 72 g (Intel
+# RealSense D400 datasheet) as a solid box of its collision shape, which
+# collision_overrides.yaml sets to the camera body. Without this entry it gets 1 g.
+links:
+  camera_link: {mass: 0.072, model: solid}  # RealSense D435
+  arm_1_link: {mass: 3.9, model: solid}   # ERB 145, axes 1-2
+  arm_2_link: {mass: 1.4, model: shell}   # VBE F145-145-P upper arm (estimated)
+  arm_3_link: {mass: 3.9, model: solid}   # ERB 145, axes 3-4
+  arm_4_link: {mass: 1.0, model: shell}   # VBE F145-115-W90 forearm (estimated)
+  arm_5_link: {mass: 1.5, model: solid}   # ERB 115, axes 5-6, without the flange (estimated)
+  arm_6_link: {mass: 0.3, model: solid}   # ERB 115 output flange (estimated)

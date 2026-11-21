@@ -1,14 +1,38 @@
 # Isaac Sim backend settings (read by sim.py).
 # Physics values come from DaverSVK/ARM_simulation@66a8a66 (configs/robot.json,
-# src/catan_robot/robots/lwa4p.py), where the same arm and gripper grasp by friction.
+# src/catan_robot/robots/lwa4p.py), where the same arm and gripper grasp by friction,
+# unless a comment names another source.
+# The link masses are not here: make_isaac_urdf writes them into the robot URDF
+# (src/manipulation_isaac_sim/config/link_inertials.yaml; ISAAC_INERTIALS=urdf for Tomas's).
 
 physics:
   # 120 Hz: the controller manager runs once per physics step, so this is also its rate.
   dt: 0.008333333333333333
   device: cpu
 
-import:
-  collision_type: Convex Decomposition
+# Robot mesh colliders (the arm links): PhysX simulates a triangle mesh on a moving body
+# only as convex shapes. The importer writes one convex hull per mesh, which fills the bends
+# of the upper arm (hull 1.6 x its volume) and the forearm (3.6 x). Convex decomposition
+# splits a mesh into several hulls that follow its shape. robot_setup.py sets it on the
+# live stage; PhysX cooks it at start and caches the result. Primitive shapes (boxes and
+# cylinders of the base, FTM, gripper and camera) stay exact.
+# PhysxConvexDecompositionCollisionAPI; PhysX's defaults except shrink_wrap.
+# Measured (2026-11-21, headless, RTX 5080 Laptop, CPU physics): with these values the
+# near-spherical ERB modules stay one hull (arm_1, arm_3, arm_5), the curved arm_2 and arm_4
+# get 32 hulls each and the flange arm_6 22; the first cook takes 3.8 s, later starts read
+# PhysX's mesh cache. Error 2 % splits every link into 32 hulls (first cook 10 s) for no
+# visible gain. Simulation speed was the same with single hulls (20 s simulated in 31 s).
+collision:
+  mesh_approximation: convexDecomposition
+  convex_decomposition:
+    max_convex_hulls: 32
+    hull_vertex_limit: 64
+    voxel_resolution: 500000
+    # Allowed volume error of the decomposition [%].
+    error_percentage: 10
+    min_thickness: 0.001
+    # Project the hull points onto the mesh surface.
+    shrink_wrap: true
 
 articulation:
   solver_position_iterations: 64
@@ -26,6 +50,30 @@ drives:
   # out on Tomas's goal tolerance. Grip force is not tuned yet: a finger stopped by an
   # object pushes with stiffness x remaining distance, up to the 80 N limit.
   'gripper_.*joint': [2000.0, 100.0]
+
+# Joint friction and actuator inertia: joint-name regex -> values; the first matching pattern
+# wins, a pattern that matches no joint is an error, and joints without a match get none.
+# SI units per radian; robot_setup.py converts the viscous coefficient to USD's degrees.
+#   static_friction, dynamic_friction [N m]: Coulomb friction at rest and in motion.
+#   viscous_friction [N m s/rad]: grows with the joint speed.
+#   armature [kg m^2]: inertia of motor rotor and gear reflected to the joint (gear ratio^2).
+# Friction: Memar, Esfahani, "Modeling and Dynamic Parameter Identification of the SCHUNK
+# Powerball Robotic Arm", ASME IDETC 2015, DETC2015-47703, Table 2. Measured on another
+# LWA 4P after a warm-up (cold harmonic drives have about 10 % more viscous friction), as
+#   f = g1 tanh(g2 v) + g3 tanh(g4 v) + g5 v,
+# fitted here to Coulomb + viscous over 0.02..0.5 rad/s (the MoveIt speed limit), max. error
+# 0.8 N m. They saw no Stribeck effect, so static = dynamic friction.
+# Armature: not measured, an estimate. The paper's identified rotor term of axis 3
+# (0.083 kg m^2) for the ERB 145 axes; its axes 4 (0.49) and 5 (0.16) contradict it and are
+# not used. ERB 115: 0.083 x (100/160)^2 (ERB manual 3.1: gear ratios 100 and 160) = 0.03,
+# an upper bound for a smaller motor.
+joint_dynamics:
+  'arm_1_joint': {static_friction: 5.20, dynamic_friction: 5.20, viscous_friction: 18.34, armature: 0.083}
+  'arm_2_joint': {static_friction: 5.68, dynamic_friction: 5.68, viscous_friction: 21.81, armature: 0.083}
+  'arm_3_joint': {static_friction: 5.35, dynamic_friction: 5.35, viscous_friction: 19.98, armature: 0.083}
+  'arm_4_joint': {static_friction: 4.83, dynamic_friction: 4.83, viscous_friction: 15.53, armature: 0.083}
+  'arm_5_joint': {static_friction: 0.31, dynamic_friction: 0.31, viscous_friction: 0.46, armature: 0.03}
+  'arm_6_joint': {static_friction: 0.30, dynamic_friction: 0.30, viscous_friction: 0.42, armature: 0.03}
 
 # Start pose: SRDF named states per MoveIt group (lwa4p_moveit_config/config/lwa4p.srdf).
 # make_isaac_urdf adds the finger positions that follow gripper_joint as its mimic joints.

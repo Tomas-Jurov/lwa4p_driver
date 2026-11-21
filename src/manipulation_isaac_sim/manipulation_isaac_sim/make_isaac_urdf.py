@@ -16,12 +16,18 @@ from xml.etree import ElementTree
 from ament_index_python.packages import get_package_share_directory
 from manipulation_isaac_sim import isaac_urdf
 import xacro
+import yaml
 
 PACKAGE_NAME = 'manipulation_isaac_sim'
 URDF_NAME = 'robot.urdf'
 MANIFEST_NAME = 'manifest.json'
 MESH_DIR_NAME = 'meshes'
 CONTROLLERS_NAME = 'isaac_controllers.yaml'
+LINK_INERTIALS_NAME = 'link_inertials.yaml'
+COLLISION_OVERRIDES_NAME = 'collision_overrides.yaml'
+# datasheet: the arm masses of config/link_inertials.yaml, inertia from the meshes;
+# urdf: Tomas's inertials unchanged.
+INERTIALS_CHOICES = ('datasheet', 'urdf')
 
 
 def default_xacro_path() -> str:
@@ -38,6 +44,20 @@ def default_controllers_path() -> str:
     return os.path.join(get_package_share_directory(PACKAGE_NAME), 'config', CONTROLLERS_NAME)
 
 
+def default_link_inertials_path() -> str:
+    return os.path.join(get_package_share_directory(PACKAGE_NAME), 'config', LINK_INERTIALS_NAME)
+
+
+def default_collision_overrides_path() -> str:
+    return os.path.join(
+        get_package_share_directory(PACKAGE_NAME), 'config', COLLISION_OVERRIDES_NAME)
+
+
+def load_links(path: str) -> dict:
+    with open(path, encoding='utf-8') as file:
+        return yaml.safe_load(file)['links']
+
+
 def parse_arguments(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', required=True, help='directory for the robot files')
@@ -45,6 +65,15 @@ def parse_arguments(argv: list[str]) -> argparse.Namespace:
     parser.add_argument('--srdf', default=None, help='SRDF with the disabled collision pairs')
     parser.add_argument('--controllers', default=None,
                         help='ros2_control YAML of the controller manager inside Isaac Sim')
+    parser.add_argument('--inertials', choices=INERTIALS_CHOICES, default='datasheet',
+                        help='datasheet: arm masses from --link-inertials with inertia from '
+                             "the meshes (default); urdf: keep Tomas's inertials")
+    parser.add_argument('--link-inertials', default=None,
+                        help='YAML with the link masses '
+                             f'(default: config/{LINK_INERTIALS_NAME})')
+    parser.add_argument('--collision-overrides', default=None,
+                        help='YAML with the collision shapes replaced for Isaac Sim only '
+                             f'(default: config/{COLLISION_OVERRIDES_NAME})')
     return parser.parse_args(argv)
 
 
@@ -75,6 +104,11 @@ def main(argv: list[str] | None = None) -> int:
 
     root = isaac_urdf.prepare_urdf(
         xacro.process_file(xacro_path).toxml(), get_package_share_directory)
+    collision_overrides = isaac_urdf.replace_collisions(
+        root, load_links(arguments.collision_overrides or default_collision_overrides_path()))
+    if arguments.inertials == 'datasheet':
+        isaac_urdf.apply_link_inertials(
+            root, load_links(arguments.link_inertials or default_link_inertials_path()))
     mesh_copies = isaac_urdf.bundle_meshes(root, mesh_dir)
     urdf_xml = ElementTree.tostring(root, encoding='unicode')
     with open(srdf_path, encoding='utf-8') as srdf_file:
@@ -91,6 +125,8 @@ def main(argv: list[str] | None = None) -> int:
         'urdf': urdf_path,
         'controllers': controllers_path,
         'digest': isaac_urdf.source_digest(urdf_xml, mesh_copies.values()),
+        'inertials': arguments.inertials,
+        'collision_overrides': collision_overrides,
         'effort_limits': isaac_urdf.joint_effort_limits(root),
         'disabled_collision_pairs': isaac_urdf.disabled_collision_pairs(srdf_xml),
         'named_states': named_states_with_mimics(root, srdf_xml),

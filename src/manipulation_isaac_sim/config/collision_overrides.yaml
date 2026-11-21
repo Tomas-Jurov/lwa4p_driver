@@ -1,0 +1,19 @@
+# Collision shapes that make_isaac_urdf replaces in the URDF for the Isaac Sim importer only.
+# MoveIt and robot_state_publisher keep Tomas's description: there the shapes are generous on
+# purpose, to keep the planner clear of what the model does not show exactly. In the
+# simulation a generous shape touches objects the real robot does not.
+#
+# Per link: a list of shapes, each box: [x, y, z], cylinder: {radius, length} or
+# sphere: radius, with an optional origin: {xyz, rpy} in the link frame [m, rad].
+links:
+  # The RealSense D435 body alone, without Tomas's margin (his box is 60 x 130 x 50 mm for
+  # the camera, its bracket, screws and cable plug). camera_link is the frame
+  # realsense2_camera publishes, the depth origin. From Intel's realsense2_description
+  # (IntelRealSense/realsense-ros, ros2-master, urdf/_d435.urdf.xacro): body 25.05 x 90 x
+  # 25 mm (depth x width x height), centred 17.5 mm towards -y from camera_link, front glass
+  # 4.3 mm in front of it (zero depth to glass 4.2 mm + glass to front 0.1 mm), so the body
+  # centre is 4.3 - 25.05 / 2 = -8.225 mm along the optical axis x. Intel's own collision box
+  # straddles camera_link instead. The bracket behind the camera is not modelled.
+  camera_link:
+    - box: [0.02505, 0.090, 0.025]
+      origin: {xyz: [-0.008225, -0.0175, 0.0]}

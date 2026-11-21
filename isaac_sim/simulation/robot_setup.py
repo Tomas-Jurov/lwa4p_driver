@@ -28,7 +28,13 @@ def configure_robot(stage: Usd.Stage, robot_path: str, robot_manifest: dict,
     child_link_joints = _child_link_joints(robot_manifest['urdf'])
     _configure_drives(joints, config['drives'], robot_manifest['effort_limits'],
                       _initial_positions(robot_manifest['named_states'], config['initial_state']))
+    configured = _configure_joint_dynamics(
+        joints, config.get('joint_dynamics', {}), robot_manifest['effort_limits'])
+    print(f'[isaac_sim] joint friction and armature: {configured}', flush=True)
     _configure_articulation(robot, config['articulation'])
+    colliders = configure_mesh_colliders(robot, config['collision'])
+    print(f'[isaac_sim] {len(colliders)} robot mesh colliders: '
+          f'{config["collision"]["mesh_approximation"]}', flush=True)
     links = {link: body for link in child_link_joints
              if (body := _link_body(stage, joints, child_link_joints, link)) is not None}
     bound = contact.bind_by_name(stage, links, config['contact']['robot'],
@@ -68,6 +74,119 @@ def _configure_drives(joints: dict, drives: dict, effort_limits: dict,
         drive.CreateMaxForceAttr(effort_limit)
         drive.CreateTargetPositionAttr(initial_position)
         PhysxSchema.JointStateAPI.Apply(joint, axis).CreatePositionAttr(initial_position)
+
+
+def configure_mesh_colliders(robot: Usd.Prim, settings: dict) -> list[Usd.Prim]:
+    """
+    Set the collision approximation of every robot mesh collider; return the colliders.
+
+    The importer puts the colliders in instances, whose prims are read-only proxies on the
+    stage, so the instances that hold a mesh collider are made ordinary prims first (an
+    opinion in the in-memory root layer; the cached USD does not change).
+    """
+    while True:
+        instances = [prim for prim in Usd.PrimRange(robot)
+                     if prim.IsInstance() and _holds_mesh_collider(prim.GetPrototype())]
+        if not instances:
+            break
+        for prim in instances:
+            prim.SetInstanceable(False)
+    colliders = mesh_colliders(robot)
+    approximation = settings['mesh_approximation']
+    decomposition = settings['convex_decomposition']
+    for prim in colliders:
+        UsdPhysics.MeshCollisionAPI(prim).CreateApproximationAttr().Set(approximation)
+        if approximation != UsdPhysics.Tokens.convexDecomposition:
+            continue
+        api = PhysxSchema.PhysxConvexDecompositionCollisionAPI.Apply(prim)
+        api.CreateMaxConvexHullsAttr(int(decomposition['max_convex_hulls']))
+        api.CreateHullVertexLimitAttr(int(decomposition['hull_vertex_limit']))
+        api.CreateVoxelResolutionAttr(int(decomposition['voxel_resolution']))
+        api.CreateErrorPercentageAttr(float(decomposition['error_percentage']))
+        api.CreateMinThicknessAttr(float(decomposition['min_thickness']))
+        api.CreateShrinkWrapAttr(bool(decomposition['shrink_wrap']))
+    return colliders
+
+
+def mesh_colliders(robot: Usd.Prim) -> list[Usd.Prim]:
+    """Return the robot's mesh colliders outside instances."""
+    return [prim for prim in Usd.PrimRange(robot) if prim.HasAPI(UsdPhysics.MeshCollisionAPI)]
+
+
+def convex_hull_counts(stage_id: int, colliders: list[Usd.Prim]) -> dict[str, int | str]:
+    """
+    Cook the colliders now and return {link: number of convex hulls PhysX made}.
+
+    A collider that fails to cook reports the PhysX result instead of a count. The cooked
+    shapes go to PhysX's local mesh cache, so only the first start with new meshes or new
+    decomposition settings is slow.
+    """
+    # PhysX's Python modules exist only once Isaac Sim runs.
+    from omni.physx import get_physx_cooking_interface
+    from omni.physx.bindings._physx import PhysxCollisionRepresentationResult
+    from pxr import PhysicsSchemaTools
+
+    cooking = get_physx_cooking_interface()
+    counts = {}
+    for prim in colliders:
+        reply = {}
+
+        def on_result(result, convexes, reply=reply):
+            reply['result'], reply['count'] = result, len(convexes)
+
+        cooking.request_convex_collision_representation(
+            stage_id=stage_id, collision_prim_id=PhysicsSchemaTools.sdfPathToInt(prim.GetPath()),
+            run_asynchronously=False, on_result=on_result)
+        valid = reply.get('result') == PhysxCollisionRepresentationResult.RESULT_VALID
+        counts[_owning_body_name(prim)] = reply['count'] if valid else str(reply.get('result'))
+    return counts
+
+
+def _holds_mesh_collider(prototype: Usd.Prim) -> bool:
+    return any(prim.HasAPI(UsdPhysics.MeshCollisionAPI) for prim in Usd.PrimRange(prototype))
+
+
+def _owning_body_name(prim: Usd.Prim) -> str:
+    """Return the name of the rigid body (the link) a collider belongs to."""
+    body = prim
+    while body and not body.HasAPI(UsdPhysics.RigidBodyAPI):
+        body = body.GetParent()
+    return body.GetName() if body else prim.GetName()
+
+
+def _configure_joint_dynamics(joints: dict, dynamics: dict, actuated: dict) -> list[str]:
+    """
+    Apply joint friction and armature; return the configured joints.
+
+    Config units are SI per radian. USD wants the viscous coefficient per degree; the
+    friction efforts and the armature need no conversion. PhysxJointAxisAPI has no Python
+    class, so it is applied by name, as Isaac Sim's own articulation code does.
+    """
+    unmatched = [pattern for pattern in dynamics
+                 if not any(re.fullmatch(pattern, name) for name in actuated)]
+    if unmatched:
+        raise ValueError(f'joint_dynamics patterns match no actuated joint: {unmatched}')
+    configured = []
+    for name in actuated:
+        pattern = next((pattern for pattern in dynamics if re.fullmatch(pattern, name)), None)
+        if pattern is None:
+            continue
+        values = dynamics[pattern]
+        joint = joints[name]
+        axis = ANGULAR if joint.IsA(UsdPhysics.RevoluteJoint) else LINEAR
+        per_usd_unit = math.pi / 180.0 if axis == ANGULAR else 1.0
+        joint.ApplyAPI('PhysxJointAxisAPI', axis)
+        for attribute, value in (
+                ('staticFrictionEffort', values['static_friction']),
+                ('dynamicFrictionEffort', values['dynamic_friction']),
+                ('viscousFrictionCoefficient', values['viscous_friction'] * per_usd_unit)):
+            usd_attribute = joint.GetAttribute(f'physxJointAxis:{axis}:{attribute}')
+            if not usd_attribute:
+                raise RuntimeError(f'{name}: PhysX has no joint attribute {attribute!r}')
+            usd_attribute.Set(float(value))
+        PhysxSchema.PhysxJointAPI.Apply(joint).CreateArmatureAttr(float(values['armature']))
+        configured.append(name)
+    return configured
 
 
 def _gains_for(joint_name: str, drives: dict) -> tuple[float, float]:

@@ -108,6 +108,43 @@ def test_worlds_name_their_moveit_obstacles(urdf):
             assert added, f'{name}: {world["sdf_obstacles"]} has no static models'
 
 
+def test_link_inertials_fit_the_model(urdf):
+    """The datasheet masses name existing links, whose shapes give valid inertia."""
+    overrides = load_yaml(share('manipulation_isaac_sim', 'config', 'collision_overrides.yaml'))
+    inertials = load_yaml(share('manipulation_isaac_sim', 'config', 'link_inertials.yaml'))
+    root = isaac_urdf.prepare_urdf(
+        ElementTree.tostring(urdf, encoding='unicode'), get_package_share_directory)
+    isaac_urdf.replace_collisions(root, overrides['links'])
+    masses = isaac_urdf.apply_link_inertials(root, inertials['links'])
+    # SCHUNK LWA 4P manual 1344817, 3.2: 12 kg without the base.
+    arm_masses = [mass for name, mass in masses.items() if name.startswith('arm_')]
+    assert len(arm_masses) == 6
+    assert sum(arm_masses) == pytest.approx(12.0)
+    for name in masses:
+        inertia = root.find(f"link[@name='{name}']/inertial/inertia")
+        diagonal = [float(inertia.get(axis)) for axis in ('ixx', 'iyy', 'izz')]
+        assert all(value > 0.0 for value in diagonal), name
+        assert 2 * max(diagonal) <= sum(diagonal) * (1 + 1e-6), f'{name}: triangle inequality'
+
+
+def test_collision_overrides_shrink_existing_shapes(urdf):
+    """Every override names a link that collides in Tomas's model, and stays inside it."""
+    overrides = load_yaml(share('manipulation_isaac_sim', 'config', 'collision_overrides.yaml'))
+    for name in overrides['links']:
+        collisions = urdf.findall(f"link[@name='{name}']/collision")
+        assert collisions, f'{name}: the model has no collision there any more'
+    # The D435 body lies inside Tomas's generous camera box, which keeps MoveIt clear of it.
+    tomas = urdf.find("link[@name='camera_link']/collision")
+    body = overrides['links']['camera_link'][0]
+    tomas_center = [float(value) for value in tomas.find('origin').get('xyz').split()]
+    tomas_size = [float(value) for value in tomas.find('geometry/box').get('size').split()]
+    for axis in range(3):
+        low = body['origin']['xyz'][axis] - body['box'][axis] / 2
+        high = body['origin']['xyz'][axis] + body['box'][axis] / 2
+        assert tomas_center[axis] - tomas_size[axis] / 2 <= low, axis
+        assert high <= tomas_center[axis] + tomas_size[axis] / 2, axis
+
+
 def test_isaac_controllers_serve_moveit():
     controllers = load_yaml(share('manipulation_isaac_sim', 'config', 'isaac_controllers.yaml'))
     for name, joints in CONTROLLERS.items():

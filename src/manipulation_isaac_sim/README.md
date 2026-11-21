@@ -23,9 +23,14 @@ The Isaac Sim side (the simulator process, physics, scene) lives in [`isaac_sim/
   - a 1 g mass on massless links with a collision shape (the real `camera_link`), so their colliders become rigid bodies;
   - mesh URIs replaced by absolute paths of the copies in the output directory;
   - a 1 g mass on massless links between other links (`arm_tool0`, `ftm_tool0`).
-    The importer makes such links plain transforms, and the URDF export inside `isaacsim.ros2.control` then loses every joint below them, including the gripper.
+    The importer makes such links plain transforms, and the URDF export inside `isaacsim.ros2.control` then loses every joint below them, including the gripper;
+  - the collision shapes of `config/collision_overrides.yaml` instead of the description's: the camera collides with the D435 body, not with Tomas's generous planning box;
+  - with `--inertials datasheet` (the default), the link masses of `config/link_inertials.yaml`, with the centre of mass and the inertia tensor computed from each arm link's visual mesh (`mesh_inertia.py`: solid or thin shell) and from the camera's collision box.
+    `--inertials urdf` keeps Tomas's inertials; `isaac_sim/run.sh` and `docker/run_jazzy_hybrid.sh` pass `ISAAC_INERTIALS` as this option ([`isaac_sim/README.md`](../../isaac_sim/README.md#masses)).
 
-  The manifest holds the source digest (URDF and mesh bytes, the USD cache key), the URDF effort limits (the drive force limits), the SRDF collision pairs that MoveIt ignores (also ignored by PhysX), and the SRDF named states with their mimic joints (the start pose).
+  The manifest holds the source digest (URDF and mesh bytes, the USD cache key), which inertials the URDF has, the URDF effort limits (the drive force limits), the SRDF collision pairs that MoveIt ignores (also ignored by PhysX), and the SRDF named states with their mimic joints (the start pose).
+- `config/collision_overrides.yaml`: collision shapes for Isaac Sim only, with sources; now the D435 body from Intel's `realsense2_description`.
+- `config/link_inertials.yaml`: the link masses and their mass models, with sources (the camera: Intel's 72 g): SCHUNK's LWA 4P manual (12 kg without the base) and ERB manual (3.9 and 1.8 kg per module); the split of the remaining 2.4 kg and of the ERB 115 is estimated as in [`DaverSVK/ARM_simulation`](https://github.com/DaverSVK/ARM_simulation).
 - `config/isaac_controllers.yaml`: the controllers of the controller manager inside Isaac Sim, under the names MoveIt uses on every backend.
 - `config/moveit_controllers.yaml`: the arm and the execution settings are the real robot's (`lwa4p_moveit_config`; a test fails when Tomas changes them).
   The gripper is a trajectory controller on `gripper_joint`, where the real robot has `GripperCommand`: Isaac Sim ships no gripper action controller, and the simulation gripper adapter is open (D09).
@@ -68,5 +73,6 @@ colcon test --packages-select manipulation_isaac_sim && colcon test-result --ver
 ```
 
 - `test_isaac_urdf.py`: the URDF preparation, without ROS.
-- `test_model_contract.py`: the joints, frames, SRDF groups, named states, workspace obstacles and controllers our code relies on still exist in Tomas's model.
+- `test_mesh_inertia.py`: the mesh mass properties against closed-form boxes, without ROS.
+- `test_model_contract.py`: the joints, frames, SRDF groups, named states, workspace obstacles, controllers, the links of `link_inertials.yaml` (12 kg arm, valid inertia from Tomas's meshes) and of `collision_overrides.yaml` (each override inside Tomas's shape) our code relies on still exist in Tomas's model.
   After a `main → devel` sync, a failure here means Tomas renamed something; update our side, never his files.

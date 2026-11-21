@@ -10,6 +10,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import time
 
 from isaacsim import SimulationApp
 
@@ -38,6 +39,7 @@ import isaacsim.core.experimental.utils.app as app_utils  # noqa: E402
 import isaacsim.core.experimental.utils.stage as stage_utils  # noqa: E402
 from isaacsim.core.rendering_manager import ViewportManager  # noqa: E402
 from isaacsim.core.simulation_manager import SimulationManager  # noqa: E402
+import omni.usd  # noqa: E402
 from pxr import UsdGeom  # noqa: E402
 from simulation import robot_import  # noqa: E402
 from simulation import robot_setup  # noqa: E402
@@ -66,8 +68,9 @@ def main() -> int:
     ros_bridge.enable_ros_extensions(app_utils)
     simulation_app.update()
 
-    usd_path = robot_import.import_robot(robot_manifest, config['import'], arguments.cache_dir)
-    print(f'[isaac_sim] robot USD: {usd_path}', flush=True)
+    usd_path = robot_import.import_robot(robot_manifest, arguments.cache_dir)
+    print(f'[isaac_sim] robot USD: {usd_path} (inertials: '
+          f'{robot_manifest.get("inertials", "unknown")})', flush=True)
 
     stage_utils.create_new_stage()
     stage_utils.set_stage_units(meters_per_unit=1.0)
@@ -77,6 +80,12 @@ def main() -> int:
     stage_utils.add_reference_to_stage(
         usd_path=str(usd_path), path=ROBOT_PATH, variants=[('Physics', 'physx')])
     mount_bodies = robot_setup.configure_robot(stage, ROBOT_PATH, robot_manifest, config)
+    cooking_start = time.monotonic()
+    hulls = robot_setup.convex_hull_counts(
+        omni.usd.get_context().get_stage_id(),
+        robot_setup.mesh_colliders(stage.GetPrimAtPath(ROBOT_PATH)))
+    print(f'[isaac_sim] convex hulls per link: {hulls} '
+          f'(cooked in {time.monotonic() - cooking_start:.1f} s)', flush=True)
     filtered = scene.filter_robot_mount(world_root, mount_bodies)
     print(f'[isaac_sim] mounted base {[body.GetName() for body in mount_bodies]} filtered '
           f'against {filtered} world colliders', flush=True)

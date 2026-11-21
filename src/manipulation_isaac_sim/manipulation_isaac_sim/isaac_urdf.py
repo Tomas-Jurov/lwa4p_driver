@@ -10,6 +10,8 @@ import hashlib
 import os
 from xml.etree import ElementTree
 
+from manipulation_isaac_sim import mesh_inertia
+
 PACKAGE_PREFIX = 'package://'
 FILE_PREFIX = 'file://'
 ACTUATED_JOINT_TYPES = ('revolute', 'prismatic', 'continuous')
@@ -50,6 +52,135 @@ def prepare_urdf(urdf_xml: str, resolve_package: Callable[[str], str]) -> Elemen
     for link_name in massless_connector_links(root) + massless_collision_links(root):
         _add_connector_inertial(root.find(f"link[@name='{link_name}']"))
     return root
+
+
+def apply_link_inertials(root: ElementTree.Element, links: dict[str, dict]) -> dict[str, float]:
+    """
+    Replace the <inertial> of the listed links; return {link: mass}.
+
+    links maps a link name to {'mass': kg, 'model': 'solid' | 'shell'}. The centre of
+    mass and the inertia tensor come from the link's single visual mesh carrying that
+    mass, so they follow Tomas's meshes. A link without a visual mesh but with a single
+    collision box (the camera) is a solid box. Call after prepare_urdf, which makes mesh
+    paths absolute, and after replace_collisions.
+    """
+    masses = {}
+    for name, spec in links.items():
+        link = root.find(f"link[@name='{name}']")
+        if link is None:
+            raise ValueError(f'link inertials: the model has no link {name!r}')
+        unknown = set(spec) - {'mass', 'model'}
+        if unknown:
+            raise ValueError(f'link inertials: unknown keys {sorted(unknown)} for {name!r}')
+        mesh = _single_visual_mesh(link)
+        if mesh is not None:
+            scale = tuple(float(value) for value in mesh.get('scale', '1 1 1').split())
+            properties = mesh_inertia.mass_properties(
+                mesh_inertia.read_stl(mesh.get('filename')), float(spec['mass']),
+                spec['model'], scale)
+        else:
+            properties = _box_mass_properties(link, float(spec['mass']), spec['model'])
+        for inertial in link.findall('inertial'):
+            link.remove(inertial)
+        _add_inertial(link, properties)
+        masses[name] = properties.mass
+    return masses
+
+
+def replace_collisions(root: ElementTree.Element, links: dict[str, list]) -> list[str]:
+    """
+    Replace the <collision> elements of the listed links; return the links.
+
+    links maps a link name to a list of shapes, each {'box': [x, y, z]},
+    {'cylinder': {'radius': r, 'length': l}} or {'sphere': r}, with an optional
+    'origin': {'xyz': [...], 'rpy': [...]} in the link frame.
+    """
+    for name, shapes in links.items():
+        link = root.find(f"link[@name='{name}']")
+        if link is None:
+            raise ValueError(f'collision overrides: the model has no link {name!r}')
+        for collision in link.findall('collision'):
+            link.remove(collision)
+        for shape in shapes:
+            _add_collision_shape(link, shape, name)
+    return sorted(links)
+
+
+def _add_collision_shape(link: ElementTree.Element, shape: dict, name: str) -> None:
+    geometry_keys = set(shape) & {'box', 'cylinder', 'sphere'}
+    unknown = set(shape) - {'box', 'cylinder', 'sphere', 'origin'}
+    if len(geometry_keys) != 1 or unknown:
+        raise ValueError(f'collision overrides: {name!r} needs one of box, cylinder, sphere '
+                         f'and optionally origin, not {sorted(shape)}')
+    collision = ElementTree.SubElement(link, 'collision')
+    origin = shape.get('origin', {})
+    ElementTree.SubElement(collision, 'origin', {
+        'xyz': _join(origin.get('xyz', [0.0] * 3)), 'rpy': _join(origin.get('rpy', [0.0] * 3))})
+    geometry = ElementTree.SubElement(collision, 'geometry')
+    if 'box' in shape:
+        ElementTree.SubElement(geometry, 'box', {'size': _join(shape['box'])})
+    elif 'cylinder' in shape:
+        ElementTree.SubElement(geometry, 'cylinder', {
+            'radius': repr(float(shape['cylinder']['radius'])),
+            'length': repr(float(shape['cylinder']['length']))})
+    else:
+        ElementTree.SubElement(geometry, 'sphere', {'radius': repr(float(shape['sphere']))})
+
+
+def _single_visual_mesh(link: ElementTree.Element) -> ElementTree.Element | None:
+    """Return the link's only visual mesh, or None when the link has no visual mesh."""
+    visuals = link.findall('visual')
+    meshes = [visual.find('geometry/mesh') for visual in visuals]
+    if not any(mesh is not None for mesh in meshes):
+        return None
+    if len(visuals) != 1:
+        raise ValueError(f'link inertials: {link.get("name")!r} needs exactly one visual mesh')
+    _require_link_frame(visuals[0].find('origin'), link.get('name'), 'visual')
+    return meshes[0]
+
+
+def _box_mass_properties(link: ElementTree.Element, mass: float,
+                         model: str) -> mesh_inertia.MassProperties:
+    collisions = link.findall('collision')
+    boxes = [collision.find('geometry/box') for collision in collisions]
+    if len(collisions) != 1 or boxes[0] is None:
+        raise ValueError(f'link inertials: {link.get("name")!r} has no visual mesh and not '
+                         'exactly one collision box')
+    if model != mesh_inertia.SOLID:
+        raise ValueError(f'link inertials: a box ({link.get("name")!r}) can only be solid')
+    origin = collisions[0].find('origin')
+    _require_link_frame(origin, link.get('name'), 'collision', check_xyz=False)
+    center = tuple(float(value) for value in
+                   (origin.get('xyz', '0 0 0') if origin is not None else '0 0 0').split())
+    x, y, z = (float(value) for value in boxes[0].get('size').split())
+    diagonal = (mass / 12 * (y * y + z * z), mass / 12 * (x * x + z * z),
+                mass / 12 * (x * x + y * y))
+    inertia = tuple(tuple(diagonal[row] if row == col else 0.0 for col in range(3))
+                    for row in range(3))
+    return mesh_inertia.MassProperties(mass, center, inertia)
+
+
+def _require_link_frame(origin: ElementTree.Element | None, link_name: str, what: str,
+                        check_xyz: bool = True) -> None:
+    if origin is None:
+        return
+    values = origin.get('rpy', '0 0 0').split()
+    if check_xyz:
+        values += origin.get('xyz', '0 0 0').split()
+    if any(float(value) != 0.0 for value in values):
+        allowed = 'the link frame' if check_xyz else 'unrotated'
+        raise ValueError(f'link inertials: the {what} origin of {link_name!r} must be {allowed}')
+
+
+def _add_inertial(link: ElementTree.Element, properties: mesh_inertia.MassProperties) -> None:
+    inertial = ElementTree.SubElement(link, 'inertial')
+    ElementTree.SubElement(inertial, 'origin', {
+        'xyz': ' '.join(f'{value:.6g}' for value in properties.center_of_mass), 'rpy': '0 0 0'})
+    ElementTree.SubElement(inertial, 'mass', {'value': f'{properties.mass:.6g}'})
+    tensor = properties.inertia
+    ElementTree.SubElement(inertial, 'inertia', {
+        f'i{"xyz"[row]}{"xyz"[col]}': f'{tensor[row][col]:.6g}'
+        for row, col in ((0, 0), (0, 1), (0, 2), (1, 1), (1, 2), (2, 2))})
 
 
 def remove_workspace_obstacles(root: ElementTree.Element) -> list[str]:
